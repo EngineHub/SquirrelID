@@ -20,7 +20,7 @@ Or in bulk:
 
 And in parallel:
 
-    int nThreads = 5;
+    int nThreads = 2; // Be kind
 	ProfileService resolver = HttpRepositoryService.forMinecraft();
     ParallelProfileService service = new ParallelProfileService(resolver, nThreads);
     service.findAllByName(Arrays.asList("Notch", "jeb_"), new Predicate<Profile>() {
