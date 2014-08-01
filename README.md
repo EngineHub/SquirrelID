@@ -11,7 +11,7 @@ Usage
 
 #### Resolver
 
-    ProfileResolver resolver = MojangResolver.forMinecraft();
+    ProfileResolver resolver = ProfileServiceResolver.forMinecraft();
     Profile profile = resolver.findByName("Notch"); // May be null
 
 Or in bulk:
@@ -46,7 +46,7 @@ Cache all resolved names:
     ProfileCache cache = new HashMapCache(); // Memory cache
 
     CacheForwardingResolver resolver = new CacheForwardingResolver(
-            MojangResolver.forMinecraft(), // Use Mojang resolver
+            ProfileServiceResolver.forMinecraft(),
             cache);
 
     Profile profile = resolver.findByName("Notch");

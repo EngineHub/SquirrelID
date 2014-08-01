@@ -41,13 +41,13 @@ import java.util.logging.Logger;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Resolves names in bulk to UUIDs.
+ * Resolves names in bulk to UUIDs using Mojang's profile HTTP API.
  */
-public class MojangResolver implements ProfileResolver {
+public class ProfileServiceResolver implements ProfileResolver {
 
     public static final String MINECRAFT_AGENT = "Minecraft";
 
-    private static final Logger log = Logger.getLogger(MojangResolver.class.getCanonicalName());
+    private static final Logger log = Logger.getLogger(ProfileServiceResolver.class.getCanonicalName());
     private static final int MAX_NAMES_PER_REQUEST = 100;
 
     private final URL profilesURL;
@@ -62,7 +62,7 @@ public class MojangResolver implements ProfileResolver {
      *
      * @param agent the agent (i.e. the game)
      */
-    public MojangResolver(String agent) {
+    public ProfileServiceResolver(String agent) {
         checkNotNull(agent);
         profilesURL = HttpRequest.url("https://api.mojang.com/profiles/" + agent);
     }
@@ -156,7 +156,7 @@ public class MojangResolver implements ProfileResolver {
      * @return a UUID resolver
      */
     public static ProfileResolver forMinecraft() {
-        return new MojangResolver(MINECRAFT_AGENT);
+        return new ProfileServiceResolver(MINECRAFT_AGENT);
     }
 
 }
