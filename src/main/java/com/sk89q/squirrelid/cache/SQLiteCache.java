@@ -40,7 +40,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * <p>The implementation performs all requests in a single thread, so
  * calls may block for a short period of time.</p>
  */
-public class SQLiteCache extends SingleThreadedCache {
+public class SQLiteCache extends AbstractUUIDCache {
 
     private final Connection connection;
     private final PreparedStatement updateStatement;
@@ -108,7 +108,24 @@ public class SQLiteCache extends SingleThreadedCache {
     }
 
     @Override
-    protected void executePut(Map<UUID, String> entries) throws SQLException {
+    public void putAll(Map<UUID, String> entries) throws CacheException {
+        try {
+            executePut(entries);
+        } catch (SQLException e) {
+            throw new CacheException("Failed to execute queries", e);
+        }
+    }
+
+    @Override
+    public ImmutableMap<UUID, String> getAllPresent(Iterable<UUID> uuids) throws CacheException {
+        try {
+            return executeGet(uuids);
+        } catch (SQLException e) {
+            throw new CacheException("Failed to execute queries", e);
+        }
+    }
+
+    protected synchronized void executePut(Map<UUID, String> entries) throws SQLException {
         for (Map.Entry<UUID, String> entry : entries.entrySet()) {
             updateStatement.setString(1, entry.getValue());
             updateStatement.setString(2, entry.getKey().toString());
@@ -116,7 +133,6 @@ public class SQLiteCache extends SingleThreadedCache {
         }
     }
 
-    @Override
     protected ImmutableMap<UUID, String> executeGet(Iterable<UUID> uuids) throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT name, uuid FROM uuid_cache WHERE uuid IN (");
@@ -139,20 +155,22 @@ public class SQLiteCache extends SingleThreadedCache {
 
         builder.append(")");
 
-        Connection conn = getConnection();
-        Statement stmt = conn.createStatement();
-        try {
-            ResultSet rs = stmt.executeQuery(builder.toString());
-            Map<UUID, String> map = new HashMap<UUID, String>();
+        synchronized (this) {
+            Connection conn = getConnection();
+            Statement stmt = conn.createStatement();
+            try {
+                ResultSet rs = stmt.executeQuery(builder.toString());
+                Map<UUID, String> map = new HashMap<UUID, String>();
 
-            while (rs.next()) {
-                UUID uuid = UUID.fromString(rs.getString("uuid"));
-                map.put(uuid, rs.getString("name"));
+                while (rs.next()) {
+                    UUID uuid = UUID.fromString(rs.getString("uuid"));
+                    map.put(uuid, rs.getString("name"));
+                }
+
+                return ImmutableMap.copyOf(map);
+            } finally {
+                stmt.close();
             }
-
-            return ImmutableMap.copyOf(map);
-        } finally {
-            stmt.close();
         }
     }
 
