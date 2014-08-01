@@ -40,7 +40,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * <p>The implementation performs all requests in a single thread, so
  * calls may block for a short period of time.</p>
  */
-public class SQLiteCache extends SingleThreadCache {
+public class SQLiteCache extends SingleThreadedCache {
 
     private final Connection connection;
     private final PreparedStatement updateStatement;

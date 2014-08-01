@@ -35,9 +35,9 @@ import java.util.concurrent.TimeUnit;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * An implementation that forces all requests to go to to one thread.
+ * An implementation that forces all requests to go to one thread.
  */
-abstract class SingleThreadCache extends AbstractUUIDCache {
+abstract class SingleThreadedCache extends AbstractUUIDCache {
 
     private final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(createExecutorService());
 
