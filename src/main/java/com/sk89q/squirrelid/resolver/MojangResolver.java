@@ -17,7 +17,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.sk89q.squirrelid;
+package com.sk89q.squirrelid.resolver;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -38,11 +38,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Resolves names in bulk to UUIDs.
  */
-public class UUIDResolver {
+public class MojangResolver implements UUIDResolver {
 
-    private static final Logger log = Logger.getLogger(UUIDResolver.class.getCanonicalName());
-    private static final int MAX_NAMES_PER_REQUEST = 100;
     public static final String MINECRAFT_AGENT = "Minecraft";
+
+    private static final Logger log = Logger.getLogger(MojangResolver.class.getCanonicalName());
+    private static final int MAX_NAMES_PER_REQUEST = 100;
 
     private final URL profilesURL;
 
@@ -56,19 +57,12 @@ public class UUIDResolver {
      *
      * @param agent the agent (i.e. the game)
      */
-    public UUIDResolver(String agent) {
+    public MojangResolver(String agent) {
         checkNotNull(agent);
         profilesURL = HttpRequest.url("https://api.mojang.com/profiles/" + agent);
     }
 
-    /**
-     * Query the profile server for UUIDs for the given names.
-     *
-     * @param names an iterable containing names
-     * @return a map of results, which may not contain results for names that are not in the database
-     * @throws IOException thrown on I/O error
-     * @throws InterruptedException thrown on interruption
-     */
+    @Override
     public ImmutableMap<String, UUID> getAllPresent(Iterable<String> names) throws IOException, InterruptedException {
         Map<String, UUID> results = new HashMap<String, UUID>();
 
@@ -117,7 +111,7 @@ public class UUIDResolver {
      * @return a UUID resolver
      */
     public static UUIDResolver forMinecraft() {
-        return new UUIDResolver(MINECRAFT_AGENT);
+        return new MojangResolver(MINECRAFT_AGENT);
     }
 
 }
