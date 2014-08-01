@@ -38,6 +38,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -51,6 +52,8 @@ public class ProfileServiceResolver implements ProfileResolver {
     private static final int MAX_NAMES_PER_REQUEST = 100;
 
     private final URL profilesURL;
+    private int maxRetries = 5;
+    private long retryDelay = 50;
 
     /**
      * Create a new resolver.
@@ -65,6 +68,45 @@ public class ProfileServiceResolver implements ProfileResolver {
     public ProfileServiceResolver(String agent) {
         checkNotNull(agent);
         profilesURL = HttpRequest.url("https://api.mojang.com/profiles/" + agent);
+    }
+
+    /**
+     * Get the maximum number of HTTP request retries.
+     *
+     * @return the maximum number of retries
+     */
+    public int getMaxRetries() {
+        return maxRetries;
+    }
+
+    /**
+     * Set the maximum number of HTTP request retries.
+     *
+     * @param maxRetries the maximum number of retries
+     */
+    public void setMaxRetries(int maxRetries) {
+        checkArgument(maxRetries > 0, "maxRetries must be >= 0");
+        this.maxRetries = maxRetries;
+    }
+
+    /**
+     * Get the number of milliseconds to delay after each failed HTTP request,
+     * doubling each time until success or total failure.
+     *
+     * @return delay in milliseconds
+     */
+    public long getRetryDelay() {
+        return retryDelay;
+    }
+
+    /**
+     * Set the number of milliseconds to delay after each failed HTTP request,
+     * doubling each time until success or total failure.
+     *
+     * @param retryDelay delay in milliseconds
+     */
+    public void setRetryDelay(long retryDelay) {
+        this.retryDelay = retryDelay;
     }
 
     @Nullable
@@ -107,12 +149,32 @@ public class ProfileServiceResolver implements ProfileResolver {
     protected ImmutableList<Profile> query(Iterable<String> names) throws IOException, InterruptedException {
         List<Profile> profiles = new ArrayList<Profile>();
 
-        Object result = HttpRequest
-                .post(profilesURL)
-                .bodyJson(names)
-                .execute()
-                .returnContent()
-                .asJson();
+        Object result;
+
+        int retriesLeft = maxRetries;
+        long retryDelay = this.retryDelay;
+
+        while (true) {
+            try {
+                result = HttpRequest
+                        .post(profilesURL)
+                        .bodyJson(names)
+                        .execute()
+                        .returnContent()
+                        .asJson();
+                break;
+            } catch (IOException e) {
+                if (retriesLeft == 0) {
+                    throw e;
+                }
+
+                log.log(Level.WARNING, "Failed to query profile service -- retrying...", e);
+                Thread.sleep(retryDelay);
+            }
+
+            retryDelay *= 2;
+            retriesLeft--;
+        }
 
         if (result instanceof Iterable) {
             for (Object entry : (Iterable) result) {
