@@ -18,6 +18,19 @@ Or in bulk:
 
 	ImmutableList<Profile> profiles = resolver.findAllByName(Arrays.asList("Notch", "jeb_"));
 
+And in parallel:
+
+    int nThreads = 5;
+	ProfileService resolver = HttpRepositoryService.forMinecraft();
+    ParallelProfileService service = new ParallelProfileService(resolver, nThreads);
+    service.findAllByName(Arrays.asList("Notch", "jeb_"), new Predicate<Profile>() {
+        @Override
+        public boolean apply(Profile input) {
+            // Do something with the input
+            return false;
+        }
+    });
+
 #### UUID -> Profile Cache
 
 Choose a cache implementation:
