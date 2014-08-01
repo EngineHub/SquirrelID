@@ -37,7 +37,7 @@ public class CacheForwardingResolverTest extends TestCase {
 
     public void testGetAllPresent() throws Exception {
         ProfileCache cache = new HashMapCache();
-        CacheForwardingResolver resolver = new CacheForwardingResolver(ProfileServiceResolver.forMinecraft(), cache);
+        CacheForwardingService resolver = new CacheForwardingService(HttpRepositoryService.forMinecraft(), cache);
 
         UUID notchUuid = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
         UUID jebUuid = UUID.fromString("853c80ef-3c37-49fd-aa49-938b674adae6");

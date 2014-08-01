@@ -32,9 +32,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Resolves UUIDs using another resolver and stores results to a cache.
  */
-public class CacheForwardingResolver implements ProfileResolver {
+public class CacheForwardingService implements ProfileService {
 
-    private final ProfileResolver resolver;
+    private final ProfileService resolver;
     private final ProfileCache cache;
 
     /**
@@ -43,7 +43,7 @@ public class CacheForwardingResolver implements ProfileResolver {
      * @param resolver the resolver to use
      * @param cache the cache to use
      */
-    public CacheForwardingResolver(ProfileResolver resolver, ProfileCache cache) {
+    public CacheForwardingService(ProfileService resolver, ProfileCache cache) {
         checkNotNull(resolver);
         checkNotNull(cache);
 

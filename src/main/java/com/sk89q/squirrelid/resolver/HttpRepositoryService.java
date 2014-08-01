@@ -44,11 +44,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Resolves names in bulk to UUIDs using Mojang's profile HTTP API.
  */
-public class ProfileServiceResolver implements ProfileResolver {
+public class HttpRepositoryService implements ProfileService {
 
     public static final String MINECRAFT_AGENT = "Minecraft";
 
-    private static final Logger log = Logger.getLogger(ProfileServiceResolver.class.getCanonicalName());
+    private static final Logger log = Logger.getLogger(HttpRepositoryService.class.getCanonicalName());
     private static final int MAX_NAMES_PER_REQUEST = 100;
 
     private final URL profilesURL;
@@ -65,7 +65,7 @@ public class ProfileServiceResolver implements ProfileResolver {
      *
      * @param agent the agent (i.e. the game)
      */
-    public ProfileServiceResolver(String agent) {
+    public HttpRepositoryService(String agent) {
         checkNotNull(agent);
         profilesURL = HttpRequest.url("https://api.mojang.com/profiles/" + agent);
     }
@@ -217,8 +217,8 @@ public class ProfileServiceResolver implements ProfileResolver {
      *
      * @return a UUID resolver
      */
-    public static ProfileResolver forMinecraft() {
-        return new ProfileServiceResolver(MINECRAFT_AGENT);
+    public static ProfileService forMinecraft() {
+        return new HttpRepositoryService(MINECRAFT_AGENT);
     }
 
 }

@@ -29,7 +29,7 @@ import java.io.IOException;
 /**
  * Resolves names into UUIDs.
  */
-public interface ProfileResolver {
+public interface ProfileService {
 
     /**
      * Query the profile server for the UUID of a name.
