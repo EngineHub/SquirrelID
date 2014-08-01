@@ -131,7 +131,6 @@ public class HttpRequest implements Closeable {
             }
 
             conn = (HttpURLConnection) reformat(url).openConnection();
-            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Java) SKMCLauncher");
 
             if (body != null) {
                 conn.setRequestProperty("Content-Type", contentType);
