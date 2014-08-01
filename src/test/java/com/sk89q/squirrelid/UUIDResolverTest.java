@@ -51,7 +51,7 @@ public class UUIDResolverTest extends TestCase {
                         hasEntry("jeb_", jebUuid)));
 
         assertThat(
-                resolver.getAllPresent(Arrays.asList("____NOBODY____", "jeb_")),
+                resolver.getAllPresent(Arrays.asList("!__@#%*@#^(@6__NOBODY____", "jeb_")),
                 allOf(
                         ExtraMatchers.<String, UUID>hasSize(1),
                         hasEntry("jeb_", jebUuid)));
