@@ -19,51 +19,51 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import com.sk89q.squirrelid.util.ExtraMatchers;
+import com.sk89q.squirrelid.Profile;
 import junit.framework.TestCase;
+import org.hamcrest.Matchers;
 
 import java.util.Arrays;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.*;
 
 public class MojangResolverTest extends TestCase {
 
     public void testGetAllPresent() throws Exception {
-        UUIDResolver resolver = MojangResolver.forMinecraft();
+        ProfileResolver resolver = MojangResolver.forMinecraft();
 
         UUID notchUuid = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
         UUID jebUuid = UUID.fromString("853c80ef-3c37-49fd-aa49-938b674adae6");
+        Profile notchProfile = new Profile(notchUuid, "Notch");
+        Profile jebProfile = new Profile(jebUuid, "jeb_");
 
         assertThat(
-                resolver.getIfPresent("Notch"),
-                equalTo(notchUuid));
+                resolver.findByName("Notch"),
+                equalTo(notchProfile));
 
         assertThat(
-                resolver.getIfPresent("!__@#%*@#^(@6__NOBODY____"),
+                resolver.findByName("!__@#%*@#^(@6__NOBODY____"),
                 equalTo(null));
 
         assertThat(
-                resolver.getAllPresent(Arrays.asList("Notch")),
+                resolver.findAllByName(Arrays.asList("Notch")),
                 allOf(
-                        ExtraMatchers.<String, UUID>hasSize(1),
-                        hasEntry("Notch", notchUuid)));
+                        Matchers.<Profile>hasSize(1),
+                        containsInAnyOrder(notchProfile)));
 
         assertThat(
-                resolver.getAllPresent(Arrays.asList("Notch", "jeb_")),
+                resolver.findAllByName(Arrays.asList("Notch", "jeb_")),
                 allOf(
-                        ExtraMatchers.<String, UUID>hasSize(2),
-                        hasEntry("Notch", notchUuid),
-                        hasEntry("jeb_", jebUuid)));
+                        Matchers.<Profile>hasSize(2),
+                        containsInAnyOrder(notchProfile, jebProfile)));
 
         assertThat(
-                resolver.getAllPresent(Arrays.asList("!__@#%*@#^(@6__NOBODY____", "jeb_")),
+                resolver.findAllByName(Arrays.asList("!__@#%*@#^(@6__NOBODY____", "jeb_")),
                 allOf(
-                        ExtraMatchers.<String, UUID>hasSize(1),
-                        hasEntry("jeb_", jebUuid)));
+                        Matchers.<Profile>hasSize(1),
+                        containsInAnyOrder(jebProfile)));
     }
 
 }

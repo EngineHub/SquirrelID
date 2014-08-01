@@ -20,50 +20,57 @@
 package com.sk89q.squirrelid.cache;
 
 import com.google.common.collect.ImmutableMap;
+import com.sk89q.squirrelid.Profile;
 
 import javax.annotation.Nullable;
-import java.util.Map;
 import java.util.UUID;
 
 /**
  * Stores a "last known" mapping of UUIDs to names.
  */
-public interface UUIDCache {
+public interface ProfileCache {
 
     /**
      * Store the given name as the last known name for the given UUID.
      *
-     * @param uuid the given UUID
-     * @param name the name
-     * @throws CacheException thrown on a error occurring
+     * <p>If the operation fails, an error will be logged but no exception
+     * will be thrown.</p>
+     *
+     * @param profile a profile
      */
-    void put(UUID uuid, String name) throws CacheException;
+    void put(Profile profile);
 
     /**
      * Store a list of zero or more names.
      *
-     * @param entries a map of UUIDs to names
-     * @throws CacheException thrown on a error occurring
+     * <p>If the operation fails, an error will be logged but no exception
+     * will be thrown.</p>
+     *
+     * @param profiles an iterable of profiles
      */
-    void putAll(Map<UUID, String> entries) throws CacheException;
+    void putAll(Iterable<Profile> profiles);
 
     /**
      * Query the cache for the name for a given UUID.
      *
+     * <p>If the operation fails, an error will be logged but no exception
+     * will be thrown.</p>
+     *
      * @param uuid the UUID
      * @return the name or {@code null} if it is not known
-     * @throws CacheException thrown on a error occurring
      */
     @Nullable
-    String getIfPresent(UUID uuid) throws CacheException;
+    Profile getIfPresent(UUID uuid);
 
     /**
      * Query the cache for the names of the given UUIDs.
      *
-     * @param uuids a list of UUIDs to query
+     * <p>If the operation fails, an error will be logged but no exception
+     * will be thrown.</p>
+     *
+     * @param ids a list of UUIDs to query
      * @return a map of results, which may not have a key for every given UUID
-     * @throws CacheException thrown on a error occurring
      */
-    ImmutableMap<UUID, String> getAllPresent(Iterable<UUID> uuids) throws CacheException;
+    ImmutableMap<UUID, Profile> getAllPresent(Iterable<UUID> ids);
 
 }

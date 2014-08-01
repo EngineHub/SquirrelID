@@ -20,6 +20,7 @@
 package com.sk89q.squirrelid.cache;
 
 import com.google.common.collect.ImmutableMap;
+import com.sk89q.squirrelid.Profile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,24 +31,26 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * A {@code MemoryCache} stores entries in a {@link ConcurrentMap}.
  */
-public class HashMapCache extends AbstractUUIDCache {
+public class HashMapCache extends AbstractProfileCache {
 
     // Cannot use Guava because the cache classes are still @Beta
     // in Guava 10.0.1 and will change
     private final ConcurrentMap<UUID, String> cache = new ConcurrentHashMap<UUID, String>();
 
     @Override
-    public void putAll(Map<UUID, String> entries) throws CacheException {
-        cache.putAll(entries);
+    public void putAll(Iterable<Profile> profiles) {
+        for (Profile profile : profiles) {
+            cache.put(profile.getUniqueId(), profile.getName());
+        }
     }
 
     @Override
-    public ImmutableMap<UUID, String> getAllPresent(Iterable<UUID> uuids) throws CacheException {
-        Map<UUID, String> results = new HashMap<UUID, String>();
+    public ImmutableMap<UUID, Profile> getAllPresent(Iterable<UUID> uuids) {
+        Map<UUID, Profile> results = new HashMap<UUID, Profile>();
         for (UUID uuid : uuids) {
             String name = cache.get(uuid);
             if (name != null) {
-                results.put(uuid, name);
+                results.put(uuid, new Profile(uuid, name));
             }
         }
         return ImmutableMap.copyOf(results);

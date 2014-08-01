@@ -19,33 +19,47 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.sk89q.squirrelid.Profile;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.UUID;
 
-public interface UUIDResolver {
+/**
+ * Resolves names into UUIDs.
+ */
+public interface ProfileResolver {
 
     /**
      * Query the profile server for the UUID of a name.
      *
      * @param name a name
-     * @return the UUID of the user, otherwise {@code null}
+     * @return the profile of the user, otherwise {@code null}
      * @throws IOException thrown on I/O error
      * @throws InterruptedException thrown on interruption
      */
     @Nullable
-    UUID getIfPresent(String name) throws IOException, InterruptedException;
+    Profile findByName(String name) throws IOException, InterruptedException;
 
     /**
      * Query the profile server for UUIDs for the given names.
      *
-     * @param names an iterable containing names
-     * @return a map of results, which may not contain results for names that are not in the database
+     * @param names an iterable containing names to search
+     * @return a list of found profiles
      * @throws IOException thrown on I/O error
      * @throws InterruptedException thrown on interruption
      */
-    ImmutableMap<String, UUID> getAllPresent(Iterable<String> names) throws IOException, InterruptedException;
+    ImmutableList<Profile> findAllByName(Iterable<String> names) throws IOException, InterruptedException;
+
+    /**
+     * Query the profile server for UUIDs for the given names.
+     *
+     * @param names an iterable containing names to search
+     * @param consumer a consumer function that will receive discovered profiles
+     * @throws IOException thrown on I/O error
+     * @throws InterruptedException thrown on interruption
+     */
+    void findAllByName(Iterable<String> names, Predicate<Profile> consumer) throws IOException, InterruptedException;
 
 }

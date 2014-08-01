@@ -20,8 +20,10 @@
 package com.sk89q.squirrelid.cache;
 
 import com.google.common.collect.ImmutableMap;
+import com.sk89q.squirrelid.Profile;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -31,6 +33,8 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -40,8 +44,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * <p>The implementation performs all requests in a single thread, so
  * calls may block for a short period of time.</p>
  */
-public class SQLiteCache extends AbstractUUIDCache {
+public class SQLiteCache extends AbstractProfileCache {
 
+    private static final Logger log = Logger.getLogger(SQLiteCache.class.getCanonicalName());
     private final Connection connection;
     private final PreparedStatement updateStatement;
 
@@ -49,30 +54,29 @@ public class SQLiteCache extends AbstractUUIDCache {
      * Create a new instance.
      *
      * @param file the path to a SQLite file to use
-     * @throws CacheException thrown on a cache error
      */
-    public SQLiteCache(File file) throws CacheException {
+    public SQLiteCache(File file) throws IOException {
         checkNotNull(file);
 
         try {
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
         } catch (ClassNotFoundException e) {
-            throw new CacheException("SQLite JDBC support is not installed");
+            throw new IOException("SQLite JDBC support is not installed");
         } catch (SQLException e) {
-            throw new CacheException("Failed to connect to cache file", e);
+            throw new IOException("Failed to connect to cache file", e);
         }
 
         try {
             createTable();
         } catch (SQLException e) {
-            throw new CacheException("Failed to create tables", e);
+            throw new IOException("Failed to create tables", e);
         }
 
         try {
-            updateStatement = connection.prepareStatement("INSERT OR REPLACE INTO uuid_cache (name, uuid) VALUES (?, ?)");
+            updateStatement = connection.prepareStatement("INSERT OR REPLACE INTO uuid_cache (uuid, name) VALUES (?, ?)");
         } catch (SQLException e) {
-            throw new CacheException("Failed to prepare statements", e);
+            throw new IOException("Failed to prepare statements", e);
         }
     }
 
@@ -108,32 +112,34 @@ public class SQLiteCache extends AbstractUUIDCache {
     }
 
     @Override
-    public void putAll(Map<UUID, String> entries) throws CacheException {
+    public void putAll(Iterable<Profile> entries) {
         try {
             executePut(entries);
         } catch (SQLException e) {
-            throw new CacheException("Failed to execute queries", e);
+            log.log(Level.WARNING, "Failed to execute queries", e);
         }
     }
 
     @Override
-    public ImmutableMap<UUID, String> getAllPresent(Iterable<UUID> uuids) throws CacheException {
+    public ImmutableMap<UUID, Profile> getAllPresent(Iterable<UUID> uuids) {
         try {
             return executeGet(uuids);
         } catch (SQLException e) {
-            throw new CacheException("Failed to execute queries", e);
+            log.log(Level.WARNING, "Failed to execute queries", e);
         }
+
+        return ImmutableMap.of();
     }
 
-    protected synchronized void executePut(Map<UUID, String> entries) throws SQLException {
-        for (Map.Entry<UUID, String> entry : entries.entrySet()) {
-            updateStatement.setString(1, entry.getValue());
-            updateStatement.setString(2, entry.getKey().toString());
+    protected synchronized void executePut(Iterable<Profile> profiles) throws SQLException {
+        for (Profile profile : profiles) {
+            updateStatement.setString(1, profile.getUniqueId().toString());
+            updateStatement.setString(2, profile.getName());
             updateStatement.executeUpdate();
         }
     }
 
-    protected ImmutableMap<UUID, String> executeGet(Iterable<UUID> uuids) throws SQLException {
+    protected ImmutableMap<UUID, Profile> executeGet(Iterable<UUID> uuids) throws SQLException {
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT name, uuid FROM uuid_cache WHERE uuid IN (");
 
@@ -160,11 +166,11 @@ public class SQLiteCache extends AbstractUUIDCache {
             Statement stmt = conn.createStatement();
             try {
                 ResultSet rs = stmt.executeQuery(builder.toString());
-                Map<UUID, String> map = new HashMap<UUID, String>();
+                Map<UUID, Profile> map = new HashMap<UUID, Profile>();
 
                 while (rs.next()) {
-                    UUID uuid = UUID.fromString(rs.getString("uuid"));
-                    map.put(uuid, rs.getString("name"));
+                    UUID uniqueId = UUID.fromString(rs.getString("uuid"));
+                    map.put(uniqueId, new Profile(uniqueId, rs.getString("name")));
                 }
 
                 return ImmutableMap.copyOf(map);

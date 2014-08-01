@@ -17,19 +17,29 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.sk89q.squirrelid.resolver;
+package com.sk89q.squirrelid.cache;
+
+import com.google.common.collect.ImmutableList;
+import com.sk89q.squirrelid.Profile;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
-abstract class AbstractResolver implements UUIDResolver {
+/**
+ * An abstract implementation.
+ */
+abstract class AbstractProfileCache implements ProfileCache {
+
+    @Override
+    public void put(Profile profile) {
+        putAll(ImmutableList.<Profile>builder().add(profile).build());
+    }
 
     @Nullable
     @Override
-    public UUID getIfPresent(String name) throws IOException, InterruptedException {
-        return getAllPresent(Arrays.asList(name)).get(name);
+    public Profile getIfPresent(UUID uuid) {
+        return getAllPresent(Arrays.asList(uuid)).get(uuid);
     }
 
 }

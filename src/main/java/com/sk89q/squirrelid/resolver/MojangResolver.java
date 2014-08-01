@@ -19,14 +19,19 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
+import com.sk89q.squirrelid.Profile;
 import com.sk89q.squirrelid.util.HttpRequest;
 import com.sk89q.squirrelid.util.UUIDs;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -38,7 +43,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Resolves names in bulk to UUIDs.
  */
-public class MojangResolver extends AbstractResolver {
+public class MojangResolver implements ProfileResolver {
 
     public static final String MINECRAFT_AGENT = "Minecraft";
 
@@ -62,30 +67,68 @@ public class MojangResolver extends AbstractResolver {
         profilesURL = HttpRequest.url("https://api.mojang.com/profiles/" + agent);
     }
 
+    @Nullable
     @Override
-    public ImmutableMap<String, UUID> getAllPresent(Iterable<String> names) throws IOException, InterruptedException {
-        Map<String, UUID> results = new HashMap<String, UUID>();
+    public Profile findByName(String name) throws IOException, InterruptedException {
+        ImmutableList<Profile> profiles = findAllByName(Arrays.asList(name));
+        if (!profiles.isEmpty()) {
+            return profiles.get(0);
+        } else {
+            return null;
+        }
+    }
 
+    @Override
+    public void findAllByName(Iterable<String> names, Predicate<Profile> consumer) throws IOException, InterruptedException {
         for (List<String> partition : Iterables.partition(names, MAX_NAMES_PER_REQUEST)) {
-            Object result = HttpRequest
-                    .post(profilesURL)
-                    .bodyJson(partition)
-                    .execute()
-                    .returnContent()
-                    .asJson();
+            for (Profile profile : query(partition)) {
+                consumer.apply(profile);
+            }
+        }
+    }
 
-            if (result instanceof Iterable) {
-                for (Object entry : (Iterable) result) {
-                    addResult(results, entry);
+    @Override
+    public ImmutableList<Profile> findAllByName(Iterable<String> names) throws IOException, InterruptedException {
+        Builder<Profile> builder = ImmutableList.builder();
+        for (List<String> partition : Iterables.partition(names, MAX_NAMES_PER_REQUEST)) {
+            builder.addAll(query(partition));
+        }
+        return builder.build();
+    }
+
+    /**
+     * Perform a query for profiles without partitioning the queries.
+     *
+     * @param names an iterable of names
+     * @return a list of results
+     * @throws IOException thrown on I/O error
+     * @throws InterruptedException thrown on interruption
+     */
+    protected ImmutableList<Profile> query(Iterable<String> names) throws IOException, InterruptedException {
+        List<Profile> profiles = new ArrayList<Profile>();
+
+        Object result = HttpRequest
+                .post(profilesURL)
+                .bodyJson(names)
+                .execute()
+                .returnContent()
+                .asJson();
+
+        if (result instanceof Iterable) {
+            for (Object entry : (Iterable) result) {
+                Profile profile = decodeResult(entry);
+                if (profile != null) {
+                    profiles.add(profile);
                 }
             }
         }
 
-        return ImmutableMap.copyOf(results);
+        return ImmutableList.copyOf(profiles);
     }
 
+    @Nullable
     @SuppressWarnings("unchecked")
-    private static void addResult(Map<String, UUID> results, Object entry) {
+    private static Profile decodeResult(Object entry) {
         try {
             if (entry instanceof Map) {
                 Map<Object, Object> mapEntry = (Map<Object, Object>) entry;
@@ -95,7 +138,7 @@ public class MojangResolver extends AbstractResolver {
                 if (rawUuid != null && rawName != null) {
                     UUID uuid = UUID.fromString(UUIDs.addDashes(String.valueOf(rawUuid)));
                     String name = String.valueOf(rawName);
-                    results.put(name, uuid);
+                    return new Profile(uuid, name);
                 }
             }
         } catch (ClassCastException e) {
@@ -103,6 +146,8 @@ public class MojangResolver extends AbstractResolver {
         } catch (IllegalArgumentException e) {
             log.log(Level.WARNING, "Got invalid value from UUID lookup service", e);
         }
+
+        return null;
     }
 
     /**
@@ -110,7 +155,7 @@ public class MojangResolver extends AbstractResolver {
      *
      * @return a UUID resolver
      */
-    public static UUIDResolver forMinecraft() {
+    public static ProfileResolver forMinecraft() {
         return new MojangResolver(MINECRAFT_AGENT);
     }
 
