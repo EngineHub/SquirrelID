@@ -32,6 +32,7 @@ import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 
 public class SQLiteCacheTest extends TestCase {
@@ -95,11 +96,23 @@ public class SQLiteCacheTest extends TestCase {
                         hasEntry(testId3, "test3")));
 
         assertThat(
+                cache.getIfPresent(testId1),
+                equalTo("test1_2"));
+
+        assertThat(
+                cache.getIfPresent(testId3),
+                equalTo("test3"));
+
+        assertThat(
                 cache.getAllPresent(Arrays.asList(testId1, testId3)),
                 allOf(
                         ExtraMatchers.<UUID, String>hasSize(2),
                         hasEntry(testId1, "test1_2"),
                         hasEntry(testId3, "test3")));
+
+        assertThat(
+                cache.getIfPresent(UUID.randomUUID()),
+                equalTo(null));
 
         cache = new SQLiteCache(file);
 
@@ -159,6 +172,10 @@ public class SQLiteCacheTest extends TestCase {
                         ExtraMatchers.<UUID, String>hasSize(2),
                         hasEntry(testId2, "test2_2"),
                         hasEntry(testId4, "test4")));
+
+        assertThat(
+                cache.getIfPresent(UUID.randomUUID()),
+                equalTo(null));
     }
 
 }

@@ -35,7 +35,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Resolves UUIDs using another resolver and stores results to a cache.
  */
-public class CachingResolver implements UUIDResolver {
+public class CachingResolver extends AbstractResolver implements UUIDResolver {
 
     private static final Logger log = Logger.getLogger(CachingResolver.class.getCanonicalName());
     private final UUIDResolver resolver;

@@ -19,33 +19,17 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import com.google.common.collect.ImmutableMap;
-
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.UUID;
 
-public interface UUIDResolver {
+abstract class AbstractResolver implements UUIDResolver {
 
-    /**
-     * Query the profile server for the UUID of a name.
-     *
-     * @param name a name
-     * @return the UUID of the user, otherwise {@code null}
-     * @throws IOException thrown on I/O error
-     * @throws InterruptedException thrown on interruption
-     */
     @Nullable
-    UUID getIfPresent(String name) throws IOException, InterruptedException;
-
-    /**
-     * Query the profile server for UUIDs for the given names.
-     *
-     * @param names an iterable containing names
-     * @return a map of results, which may not contain results for names that are not in the database
-     * @throws IOException thrown on I/O error
-     * @throws InterruptedException thrown on interruption
-     */
-    ImmutableMap<String, UUID> getAllPresent(Iterable<String> names) throws IOException, InterruptedException;
+    @Override
+    public UUID getIfPresent(String name) throws IOException, InterruptedException {
+        return getAllPresent(Arrays.asList(name)).get(name);
+    }
 
 }

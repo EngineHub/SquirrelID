@@ -21,6 +21,7 @@ package com.sk89q.squirrelid.cache;
 
 import com.google.common.collect.ImmutableMap;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
 
@@ -45,6 +46,16 @@ public interface UUIDCache {
      * @throws CacheException thrown on a error occurring
      */
     void putAll(Map<UUID, String> entries) throws CacheException;
+
+    /**
+     * Query the cache for the name for a given UUID.
+     *
+     * @param uuid the UUID
+     * @return the name or {@code null} if it is not known
+     * @throws CacheException thrown on a error occurring
+     */
+    @Nullable
+    String getIfPresent(UUID uuid) throws CacheException;
 
     /**
      * Query the cache for the names of the given UUIDs.

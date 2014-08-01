@@ -21,6 +21,8 @@ package com.sk89q.squirrelid.cache;
 
 import com.google.common.collect.ImmutableMap;
 
+import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -31,6 +33,12 @@ abstract class AbstractUUIDCache implements UUIDCache {
     @Override
     public void put(UUID uuid, String name) throws CacheException {
         putAll(ImmutableMap.<UUID, String>builder().put(uuid, name).build());
+    }
+
+    @Nullable
+    @Override
+    public String getIfPresent(UUID uuid) throws CacheException {
+        return getAllPresent(Arrays.asList(uuid)).get(uuid);
     }
 
 }

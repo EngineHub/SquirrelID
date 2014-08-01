@@ -28,6 +28,7 @@ import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 
 public class HashMapCacheTest extends TestCase {
@@ -84,6 +85,18 @@ public class HashMapCacheTest extends TestCase {
                         ExtraMatchers.<UUID, String>hasSize(2),
                         hasEntry(testId1, "test1_2"),
                         hasEntry(testId3, "test3")));
+
+        assertThat(
+                cache.getIfPresent(testId1),
+                equalTo("test1_2"));
+
+        assertThat(
+                cache.getIfPresent(testId3),
+                equalTo("test3"));
+
+        assertThat(
+                cache.getIfPresent(UUID.randomUUID()),
+                equalTo(null));
     }
 
 }

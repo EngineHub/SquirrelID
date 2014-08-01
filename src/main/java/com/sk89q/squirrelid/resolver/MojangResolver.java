@@ -38,7 +38,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Resolves names in bulk to UUIDs.
  */
-public class MojangResolver implements UUIDResolver {
+public class MojangResolver extends AbstractResolver {
 
     public static final String MINECRAFT_AGENT = "Minecraft";
 
