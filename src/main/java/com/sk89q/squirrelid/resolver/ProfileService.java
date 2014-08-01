@@ -32,6 +32,18 @@ import java.io.IOException;
 public interface ProfileService {
 
     /**
+     * Get the optimal maximum number of profiles that can be found
+     * with one {@link #findAllByName(Iterable)} call.
+     *
+     * <p>{@link #findAllByName(Iterable)} (and similar) methods may split up
+     * requests into smaller ones to fit within one request. This method
+     * returns the ideal maximum number.</p>
+     *
+     * @return the number of profiles
+     */
+    int getIdealRequestLimit();
+
+    /**
      * Query the profile server for the UUID of a name.
      *
      * @param name a name

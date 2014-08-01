@@ -51,6 +51,11 @@ public class CacheForwardingService implements ProfileService {
         this.cache = cache;
     }
 
+    @Override
+    public int getIdealRequestLimit() {
+        return resolver.getIdealRequestLimit();
+    }
+
     @Nullable
     @Override
     public Profile findByName(String name) throws IOException, InterruptedException {

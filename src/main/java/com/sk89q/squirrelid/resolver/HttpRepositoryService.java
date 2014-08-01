@@ -109,6 +109,11 @@ public class HttpRepositoryService implements ProfileService {
         this.retryDelay = retryDelay;
     }
 
+    @Override
+    public int getIdealRequestLimit() {
+        return MAX_NAMES_PER_REQUEST;
+    }
+
     @Nullable
     @Override
     public Profile findByName(String name) throws IOException, InterruptedException {
