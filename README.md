@@ -58,7 +58,7 @@ Cache all resolved names:
 
     ProfileCache cache = new HashMapCache(); // Memory cache
 
-    CacheForwardingResolver resolver = new CacheForwardingResolver(
+    CacheForwardingService resolver = new CacheForwardingService(
             HttpRepositoryService.forMinecraft(),
             cache);
 
