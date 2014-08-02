@@ -90,7 +90,6 @@
           <artifactId>hamcrest-core</artifactId>
         </exclusion>
       </exclusions>
-      <optional>true</optional>
     </dependency>
 
     <dependency>
