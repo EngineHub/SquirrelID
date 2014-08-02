@@ -31,6 +31,11 @@ import java.io.IOException;
  */
 public class BukkitPlayerService extends SingleRequestService {
 
+    private static final BukkitPlayerService INSTANCE = new BukkitPlayerService();
+
+    private BukkitPlayerService() {
+    }
+
     @Override
     public int getIdealRequestLimit() {
         return Integer.MAX_VALUE;
@@ -45,6 +50,10 @@ public class BukkitPlayerService extends SingleRequestService {
         } else {
             return null;
         }
+    }
+
+    public static BukkitPlayerService getInstance() {
+        return INSTANCE;
     }
 
 }
