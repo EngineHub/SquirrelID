@@ -33,7 +33,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.hasEntry;
 
-public class CacheForwardingResolverTest extends TestCase {
+public class CacheForwardingServiceTest extends TestCase {
 
     public void testGetAllPresent() throws Exception {
         ProfileCache cache = new HashMapCache();

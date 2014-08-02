@@ -29,7 +29,7 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class ProfileServiceResolverTest extends TestCase {
+public class HttpRepositoryServiceTest extends TestCase {
 
     public void testGetAllPresent() throws Exception {
         ProfileService resolver = HttpRepositoryService.forMinecraft();
