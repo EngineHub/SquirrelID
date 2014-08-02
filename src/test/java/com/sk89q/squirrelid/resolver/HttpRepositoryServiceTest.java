@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.*;
 public class HttpRepositoryServiceTest {
 
     @Test
-    public void testGetAllPresent() throws Exception {
+    public void testFindAllByName() throws Exception {
         ProfileService resolver = HttpRepositoryService.forMinecraft();
 
         UUID notchUuid = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");

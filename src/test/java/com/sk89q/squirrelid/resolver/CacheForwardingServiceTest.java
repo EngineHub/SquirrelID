@@ -35,7 +35,7 @@ import static org.hamcrest.Matchers.*;
 public class CacheForwardingServiceTest {
 
     @Test
-    public void testGetAllPresent() throws Exception {
+    public void testFindAllByName() throws Exception {
         ProfileCache cache = new HashMapCache();
         CacheForwardingService resolver = new CacheForwardingService(HttpRepositoryService.forMinecraft(), cache);
 
