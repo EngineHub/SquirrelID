@@ -11,59 +11,75 @@ Usage
 
 #### Resolver
 
-    ProfileService resolver = HttpRepositoryService.forMinecraft();
-    Profile profile = resolver.findByName("Notch"); // May be null
+```java
+ProfileService resolver = HttpRepositoryService.forMinecraft();
+Profile profile = resolver.findByName("Notch"); // May be null
+```
 
 Or in bulk:
 
-	ImmutableList<Profile> profiles = resolver.findAllByName(Arrays.asList("Notch", "jeb_"));
+```java
+ImmutableList<Profile> profiles = resolver.findAllByName(Arrays.asList("Notch", "jeb_"));
+```
 
 And in parallel:
 
-    int nThreads = 2; // Be kind
-	ProfileService resolver = HttpRepositoryService.forMinecraft();
-    ParallelProfileService service = new ParallelProfileService(resolver, nThreads);
-    service.findAllByName(Arrays.asList("Notch", "jeb_"), new Predicate<Profile>() {
-        @Override
-        public boolean apply(Profile input) {
-            // Do something with the input
-            return false;
-        }
-    });
+```java
+int nThreads = 2; // Be kind
+ProfileService resolver = HttpRepositoryService.forMinecraft();
+ParallelProfileService service = new ParallelProfileService(resolver, nThreads);
+service.findAllByName(Arrays.asList("Notch", "jeb_"), new Predicate<Profile>() {
+    @Override
+    public boolean apply(Profile input) {
+        // Do something with the input
+        return false;
+    }
+});
+```
 
 #### UUID -> Profile Cache
 
 Choose a cache implementation:
 
-	File file = new File("cache.sqlite");
-    SQLiteCache cache = new SQLiteCache(file);
+```java
+File file = new File("cache.sqlite");
+SQLiteCache cache = new SQLiteCache(file);
+```
 
 Store entries:
 
-	UUID uuid = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
-    cache.put(new Profile(uuid, "Notch"));
+```java
+UUID uuid = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
+cache.put(new Profile(uuid, "Notch"));
+```
 
 Get the last known profile:
 
-	Profile profile = cache.getIfPresent(uuid); // May be null
+```java
+Profile profile = cache.getIfPresent(uuid); // May be null
+```
 
 Bulk get last known profile:
 
-	ImmutableMap<UUID, Profile> results = cache.getAllPresent(Arrays.asList(uuid));
-    Profile profile = results.get(uuid); // May be null
+```java
+ImmutableMap<UUID, Profile> results = cache.getAllPresent(Arrays.asList(uuid));
+Profile profile = results.get(uuid); // May be null
+```
 
 #### Combined Resolver + Cache
 
 Cache all resolved names:
 
-    ProfileCache cache = new HashMapCache(); // Memory cache
+```java
+ProfileCache cache = new HashMapCache(); // Memory cache
 
-    CacheForwardingService resolver = new CacheForwardingService(
-            HttpRepositoryService.forMinecraft(),
-            cache);
+CacheForwardingService resolver = new CacheForwardingService(
+        HttpRepositoryService.forMinecraft(),
+        cache);
 
-    Profile profile = resolver.findByName("Notch");
-    Profile cachedProfile = cache.getIfPresent(profile.getUniqueId());
+Profile profile = resolver.findByName("Notch");
+Profile cachedProfile = cache.getIfPresent(profile.getUniqueId());
+```
 
 Compiling
 ---------
