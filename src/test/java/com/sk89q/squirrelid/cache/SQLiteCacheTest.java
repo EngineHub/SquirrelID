@@ -21,9 +21,9 @@ package com.sk89q.squirrelid.cache;
 
 import com.sk89q.squirrelid.Profile;
 import com.sk89q.squirrelid.util.ExtraMatchers;
-import junit.framework.TestCase;
 import org.hamcrest.MatcherAssert;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
@@ -33,16 +33,12 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class SQLiteCacheTest extends TestCase {
+public class SQLiteCacheTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
-    @Override
-    public void setUp() throws Exception {
-        folder.create(); // Shouldn't need to call this
-    }
-
+    @Test
     public void testDatabase() throws Exception {
         UUID testId1 = UUID.randomUUID();
         UUID testId2 = UUID.randomUUID();

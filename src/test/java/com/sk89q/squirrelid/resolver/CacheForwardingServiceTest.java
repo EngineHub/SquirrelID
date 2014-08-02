@@ -23,18 +23,18 @@ import com.sk89q.squirrelid.Profile;
 import com.sk89q.squirrelid.cache.HashMapCache;
 import com.sk89q.squirrelid.cache.ProfileCache;
 import com.sk89q.squirrelid.util.ExtraMatchers;
-import junit.framework.TestCase;
 import org.hamcrest.Matchers;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.hasEntry;
 
-public class CacheForwardingServiceTest extends TestCase {
+public class CacheForwardingServiceTest {
 
+    @Test
     public void testGetAllPresent() throws Exception {
         ProfileCache cache = new HashMapCache();
         CacheForwardingService resolver = new CacheForwardingService(HttpRepositoryService.forMinecraft(), cache);

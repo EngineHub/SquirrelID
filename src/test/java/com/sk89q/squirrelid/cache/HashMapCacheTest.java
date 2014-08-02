@@ -21,8 +21,8 @@ package com.sk89q.squirrelid.cache;
 
 import com.sk89q.squirrelid.Profile;
 import com.sk89q.squirrelid.util.ExtraMatchers;
-import junit.framework.TestCase;
 import org.hamcrest.MatcherAssert;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -30,8 +30,9 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class HashMapCacheTest extends TestCase {
+public class HashMapCacheTest {
 
+    @Test
     public void testDatabase() throws Exception {
         UUID testId1 = UUID.randomUUID();
         UUID testId2 = UUID.randomUUID();

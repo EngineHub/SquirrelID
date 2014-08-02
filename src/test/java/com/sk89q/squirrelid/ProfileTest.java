@@ -19,7 +19,7 @@
 
 package com.sk89q.squirrelid;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.util.UUID;
 
@@ -27,13 +27,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
-public class ProfileTest extends TestCase {
+public class ProfileTest {
 
+    @Test
     public void testGetUniqueId() throws Exception {
         UUID uniqueId = UUID.randomUUID();
         assertThat(new Profile(uniqueId, "test").getUniqueId(), equalTo(uniqueId));
     }
 
+    @Test
     public void testSetUniqueId() throws Exception {
         UUID uniqueId1 = UUID.randomUUID();
         Profile profile1 = new Profile(uniqueId1, "test");
@@ -44,11 +46,13 @@ public class ProfileTest extends TestCase {
         assertThat(profile1.getUniqueId(), equalTo(uniqueId1));
     }
 
+    @Test
     public void testGetName() throws Exception {
         assertThat(new Profile(UUID.randomUUID(), "test").getName(), equalTo("test"));
         assertThat(new Profile(UUID.randomUUID(), "test2").getName(), equalTo("test2"));
     }
 
+    @Test
     public void testSetName() throws Exception {
         String name1 = "test";
         Profile profile1 = new Profile(UUID.randomUUID(), name1);
@@ -59,6 +63,7 @@ public class ProfileTest extends TestCase {
         assertThat(profile1.getName(), equalTo(name1));
     }
 
+    @Test
     public void testEquals() throws Exception {
         UUID uniqueId1 = UUID.randomUUID();
         UUID uniqueId2 = UUID.randomUUID();
@@ -69,6 +74,7 @@ public class ProfileTest extends TestCase {
         assertThat(new Profile(uniqueId1, "test"), not(equalTo(new Profile(uniqueId2, "other"))));
     }
 
+    @Test
     public void testHashCode() throws Exception {
         UUID uniqueId1 = UUID.randomUUID();
         UUID uniqueId2 = UUID.randomUUID();

@@ -20,8 +20,8 @@
 package com.sk89q.squirrelid.resolver;
 
 import com.sk89q.squirrelid.Profile;
-import junit.framework.TestCase;
 import org.hamcrest.Matchers;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -29,8 +29,9 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-public class HttpRepositoryServiceTest extends TestCase {
+public class HttpRepositoryServiceTest {
 
+    @Test
     public void testGetAllPresent() throws Exception {
         ProfileService resolver = HttpRepositoryService.forMinecraft();
 
