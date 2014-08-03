@@ -26,6 +26,7 @@ import com.sk89q.squirrelid.Profile;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -110,7 +111,7 @@ public class CombinedProfileService implements ProfileService {
 
     @Override
     public void findAllByName(Iterable<String> names, final Predicate<Profile> consumer) throws IOException, InterruptedException {
-        final List<String> missing = new ArrayList<String>();
+        final List<String> missing = Collections.synchronizedList(new ArrayList<String>());
 
         Predicate<Profile> forwardingConsumer = new Predicate<Profile>() {
             @Override
@@ -125,7 +126,7 @@ public class CombinedProfileService implements ProfileService {
         }
 
         for (ProfileService service : services) {
-            service.findAllByName(missing, forwardingConsumer);
+            service.findAllByName(new ArrayList<String>(missing), forwardingConsumer);
 
             if (missing.isEmpty()) {
                 break;
