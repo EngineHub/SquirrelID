@@ -88,6 +88,16 @@ Use Maven 3 to compile SquirrelID.
 
     mvn clean package
 
+Some of the unit tests are actually integration tests and therefore make
+contact with Mojang's servers. That means that the tests may take a
+non-trivial amount of time to complete and may even fail if the Mojang
+profile servers are unreachable. In the future, these tests may be moved
+so that this becomes no longer an issue.
+
+You can disable tests with:
+
+    mvn -DskipTests=true clean package
+
 Contributing
 ------------
 
