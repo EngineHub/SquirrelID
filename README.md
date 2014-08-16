@@ -1,10 +1,13 @@
 SquirrelID
 ==========
 
-SquirrelID is a Java library for Minecraft that:
+SquirrelID is a Java library for working with Mojang profiles.
 
-* Allows the resolution of UUIDs from names in bulk.
-* Provides "last known" UUID -> name cache implementations.
+* The resolution of UUIDs from player names in bulk.
+* "Last seen" UUID -> name cache implementations.
+  * Available as SQLite-backed or in-memory.
+* Thread-safe implementations.
+* Optional parallel fetching of UUIDs from player names.
 
 Usage
 -----
@@ -79,6 +82,46 @@ CacheForwardingService resolver = new CacheForwardingService(
 
 Profile profile = resolver.findByName("Notch");
 Profile cachedProfile = cache.getIfPresent(profile.getUniqueId());
+```
+
+As a dependency
+---------------
+
+Note: We recommend shading or shadowing in SquirrelID for distribution, **relocating** the `com.sk89q.squirrelid` package to an internal package without your project.
+
+#### Maven
+
+```xml
+<repositories>
+    <repository>
+        <id>sk89q-repo</id>
+        <url>http://maven.sk89q.com/repo/</url>
+    </repository>
+</repositories>
+```
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>com.sk89q</groupId>
+        <artifactId>squirrelid</artifactId>
+        <version>0.1.0</version>
+        <scope>compile</scope>
+        <type>jar</type>
+    </dependency>
+</dependencies>
+```
+
+#### Gradle
+
+```groovy
+repositories {
+    maven { url "http://maven.sk89q.com/repo/" }
+}
+
+dependencies {
+    compile 'com.sk89q:squirrelid:0.1.0'
+}
 ```
 
 Compiling
