@@ -191,6 +191,12 @@ public class HttpRepositoryService implements ProfileService {
 
                 log.log(Level.WARNING, "Failed to query profile service -- retrying...", e);
                 Thread.sleep(retryDelay);
+            }catch (IllegalArgumentException e) {
+            	if (retriesLeft == 0) {
+            		throw e;
+            		}
+            		log.log(Level.WARNING, "Failed to query profile service -- retrying...", e);
+            		Thread.sleep(retryDelay);
             }
 
             retryDelay *= 2;
@@ -232,8 +238,15 @@ public class HttpRepositoryService implements ProfileService {
 
                 log.log(Level.WARNING, "Failed to query profile service -- retrying...", e);
                 Thread.sleep(retryDelay);
+            } catch (IllegalArgumentException e) {
+            	if (retriesLeft == 0) {
+            		throw e;
+            		}
+            		log.log(Level.WARNING, "Failed to query profile service -- retrying...", e);
+            		Thread.sleep(retryDelay);
             }
-
+            
+        	
             retryDelay *= 2;
             retriesLeft--;
         }
