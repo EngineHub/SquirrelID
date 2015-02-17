@@ -115,6 +115,15 @@ public class HttpRepositoryService implements ProfileService {
     }
 
     @Nullable
+    public Profile findLatestNameAndUUID(String name)throws IOException, InterruptedException {
+    	 ImmutableList<Profile> profiles = findAllNewByName(Arrays.asList(name+"?at=0"));
+         if (!profiles.isEmpty()) {
+             return profiles.get(0);
+         } else {
+             return null;
+         }
+    }
+    @Nullable
     @Override
     public Profile findByName(String name) throws IOException, InterruptedException {
         ImmutableList<Profile> profiles = findAllByName(Arrays.asList(name));
@@ -142,6 +151,13 @@ public class HttpRepositoryService implements ProfileService {
         }
         return builder.build();
     }
+    public ImmutableList<Profile> findAllNewByName(Iterable<String> names) throws IOException, InterruptedException {
+        Builder<Profile> builder = ImmutableList.builder();
+        for (List<String> partition : Iterables.partition(names, MAX_NAMES_PER_REQUEST)) {
+            builder.addAll(query2(partition));
+        }
+        return builder.build();
+    }
 
     /**
      * Perform a query for profiles without partitioning the queries.
@@ -151,6 +167,47 @@ public class HttpRepositoryService implements ProfileService {
      * @throws IOException thrown on I/O error
      * @throws InterruptedException thrown on interruption
      */
+    protected ImmutableList<Profile> query2(Iterable<String> names) throws IOException, InterruptedException {
+        List<Profile> profiles = new ArrayList<Profile>();
+
+        Object result;
+
+        int retriesLeft = maxRetries;
+        long retryDelay = this.retryDelay;
+
+        while (true) {
+            try {
+                result = HttpRequest
+                        .post(profilesURL)
+                        .bodyJson(names)
+                        .execute()
+                        .returnContent()
+                        .asJson();
+                break;
+            } catch (IOException e) {
+                if (retriesLeft == 0) {
+                    throw e;
+                }
+
+                log.log(Level.WARNING, "Failed to query profile service -- retrying...", e);
+                Thread.sleep(retryDelay);
+            }
+
+            retryDelay *= 2;
+            retriesLeft--;
+        }
+
+        if (result instanceof Iterable) {
+            for (Object entry : (Iterable) result) {
+                Profile profile = decodeResult(entry);
+                if (profile != null) {
+                    profiles.add(profile);
+                }
+            }
+        }
+
+        return ImmutableList.copyOf(profiles);
+    }
     protected ImmutableList<Profile> query(Iterable<String> names) throws IOException, InterruptedException {
         List<Profile> profiles = new ArrayList<Profile>();
 
@@ -192,7 +249,7 @@ public class HttpRepositoryService implements ProfileService {
 
         return ImmutableList.copyOf(profiles);
     }
-
+    
     @Nullable
     @SuppressWarnings("unchecked")
     private static Profile decodeResult(Object entry) {
