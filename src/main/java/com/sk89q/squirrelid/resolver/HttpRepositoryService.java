@@ -17,6 +17,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*  Random Info for reference 
+ *  loadURL = "https://api.mojang.com/users/profiles/minecraft/%s"
+ *	loadAtTimeURL = "https://api.mojang.com/users/profiles/minecraft/%s?at=%d"
+ *	loadWithNameHistoryURL = "https://api.mojang.com/user/profiles/%s/names"
+ *	loadWithPropertiesURL = "https://sessionserver.mojang.com/session/minecraft/profile/%s"
+ *	loadManyURL = "https://api.mojang.com/profiles/minecraft"
+ */
+
 package com.sk89q.squirrelid.resolver;
 
 import com.google.common.base.Predicate;
@@ -28,6 +36,7 @@ import com.sk89q.squirrelid.util.HttpRequest;
 import com.sk89q.squirrelid.util.UUIDs;
 
 import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -114,11 +123,19 @@ public class HttpRepositoryService implements ProfileService {
         return MAX_NAMES_PER_REQUEST;
     }
 
+    /**
+     * Query the profile server for the UUID and Name For a Player that changed their original name.
+     * 
+     * @param name a original name
+     * @return the profile of the user, otherwise {@code null}
+     * @throws IOException thrown on I/O error
+     * @throws InterruptedException thrown on interruption
+     */
     @Nullable
     public Profile findLatestNameAndUUID(String name)throws IOException, InterruptedException {
-    	 ImmutableList<Profile> profiles = findAllNewByName(Arrays.asList(name+"?at=0"));
-         if (!profiles.isEmpty()) {
-             return profiles.get(0);
+    	 Profile profile = queryGetNewName(name);
+         if (profile != null) {
+             return profile;
          } else {
              return null;
          }
@@ -151,13 +168,14 @@ public class HttpRepositoryService implements ProfileService {
         }
         return builder.build();
     }
-    public ImmutableList<Profile> findAllNewByName(Iterable<String> names) throws IOException, InterruptedException {
+    
+    /*public ImmutableList<Profile> findAllNewByName(Iterable<String> names) throws IOException, InterruptedException {
         Builder<Profile> builder = ImmutableList.builder();
         for (List<String> partition : Iterables.partition(names, MAX_NAMES_PER_REQUEST)) {
-            builder.addAll(query2(partition));
+            builder.addAll(queryGetNewName(partition));
         }
         return builder.build();
-    }
+    }/*
 
     /**
      * Perform a query for profiles without partitioning the queries.
@@ -167,22 +185,25 @@ public class HttpRepositoryService implements ProfileService {
      * @throws IOException thrown on I/O error
      * @throws InterruptedException thrown on interruption
      */
-    protected ImmutableList<Profile> query2(Iterable<String> names) throws IOException, InterruptedException {
-        List<Profile> profiles = new ArrayList<Profile>();
+    protected Profile queryGetNewName(String name) throws IOException, InterruptedException {
+       
 
         Object result;
-
+        URL profilesNewURL = HttpRequest.url("https://api.mojang.com/profiles/minecraft/");
         int retriesLeft = maxRetries;
         long retryDelay = this.retryDelay;
 
         while (true) {
             try {
+            	System.out.println("Post: "+ profilesNewURL);
+            	System.out.println("bodyJson: " + name+"?at=[0]");
                 result = HttpRequest
                         .post(profilesURL)
-                        .bodyJson(names)
+                        .bodyJson(name+"?at=0")
                         .execute()
                         .returnContent()
                         .asJson();
+                System.out.println("Result: "+ result);
                 break;
             } catch (IOException e) {
                 if (retriesLeft == 0) {
@@ -202,17 +223,18 @@ public class HttpRepositoryService implements ProfileService {
             retryDelay *= 2;
             retriesLeft--;
         }
-
+        List<Profile> profiles = new ArrayList<Profile>();
+        Profile profile;
         if (result instanceof Iterable) {
             for (Object entry : (Iterable) result) {
-                Profile profile = decodeResult(entry);
+                profile = decodeResult(entry);
                 if (profile != null) {
-                    profiles.add(profile);
+                    return profile;
                 }
             }
         }
 
-        return ImmutableList.copyOf(profiles);
+        return null;
     }
     protected ImmutableList<Profile> query(Iterable<String> names) throws IOException, InterruptedException {
         List<Profile> profiles = new ArrayList<Profile>();

@@ -6,7 +6,7 @@
 
   <groupId>com.sk89q</groupId>
   <artifactId>squirrelid</artifactId>
-  <version>0.2.1m-SNAPSHOT</version>
+  <version>0.2.2m-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <properties>
