@@ -139,6 +139,7 @@ public class HttpRepositoryService implements ProfileService {
          } else {
              return null;
          }
+         
     }
     @Nullable
     @Override
@@ -169,13 +170,6 @@ public class HttpRepositoryService implements ProfileService {
         return builder.build();
     }
     
-    /*public ImmutableList<Profile> findAllNewByName(Iterable<String> names) throws IOException, InterruptedException {
-        Builder<Profile> builder = ImmutableList.builder();
-        for (List<String> partition : Iterables.partition(names, MAX_NAMES_PER_REQUEST)) {
-            builder.addAll(queryGetNewName(partition));
-        }
-        return builder.build();
-    }/*
 
     /**
      * Perform a query for profiles without partitioning the queries.
@@ -189,21 +183,19 @@ public class HttpRepositoryService implements ProfileService {
        
 
         Object result;
-        URL profilesNewURL = HttpRequest.url("https://api.mojang.com/profiles/minecraft/");
+        URL profileNewURL = HttpRequest.url("https://api.mojang.com/users/profiles/minecraft/"+name+"?at=0");
         int retriesLeft = maxRetries;
         long retryDelay = this.retryDelay;
 
         while (true) {
             try {
-            	System.out.println("Post: "+ profilesNewURL);
-            	System.out.println("bodyJson: " + name+"?at=[0]");
+            	//System.out.println("Get: "+ profileNewURL);
                 result = HttpRequest
-                        .post(profilesURL)
-                        .bodyJson(name+"?at=0")
+                        .get(profileNewURL)
                         .execute()
                         .returnContent()
                         .asJson();
-                System.out.println("Result: "+ result);
+            //    System.out.println("Result: "+ result);
                 break;
             } catch (IOException e) {
                 if (retriesLeft == 0) {
@@ -223,19 +215,18 @@ public class HttpRepositoryService implements ProfileService {
             retryDelay *= 2;
             retriesLeft--;
         }
-        List<Profile> profiles = new ArrayList<Profile>();
         Profile profile;
-        if (result instanceof Iterable) {
-            for (Object entry : (Iterable) result) {
-                profile = decodeResult(entry);
+        
+                profile = decodeResult(result);
                 if (profile != null) {
                     return profile;
                 }
-            }
-        }
+            
+        
 
         return null;
     }
+    
     protected ImmutableList<Profile> query(Iterable<String> names) throws IOException, InterruptedException {
         List<Profile> profiles = new ArrayList<Profile>();
 
