@@ -266,7 +266,7 @@
     <profile>
       <id>java8-disable-doclint</id>
       <activation>
-        <jdk>[1.8,</jdk>
+        <jdk>[1.8,)</jdk>
       </activation>
       <build>
         <plugins>
