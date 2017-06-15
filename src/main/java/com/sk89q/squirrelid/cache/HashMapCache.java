@@ -19,13 +19,15 @@
 
 package com.sk89q.squirrelid.cache;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.sk89q.squirrelid.Profile;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -33,9 +35,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class HashMapCache extends AbstractProfileCache {
 
-    // Cannot use Guava because the cache classes are still @Beta
-    // in Guava 10.0.1 and will change
-    private final ConcurrentMap<UUID, String> cache = new ConcurrentHashMap<UUID, String>();
+    private final BiMap<UUID, String> cache = Maps.synchronizedBiMap(HashBiMap.<UUID, String>create());
 
     @Override
     public void putAll(Iterable<Profile> profiles) {
@@ -51,6 +51,18 @@ public class HashMapCache extends AbstractProfileCache {
             String name = cache.get(uuid);
             if (name != null) {
                 results.put(uuid, new Profile(uuid, name));
+            }
+        }
+        return ImmutableMap.copyOf(results);
+    }
+
+    @Override
+    public ImmutableMap<String, Profile> getAllPresentByName(Iterable<String> names) {
+        Map<String, Profile> results = new HashMap<String, Profile>();
+        for (String name : names) {
+            UUID uuid = cache.inverse().get(name);
+            if (uuid != null) {
+                results.put(name, new Profile(uuid, name));
             }
         }
         return ImmutableMap.copyOf(results);

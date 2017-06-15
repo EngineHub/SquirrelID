@@ -57,13 +57,25 @@ public interface ProfileCache {
      * will be thrown.</p>
      *
      * @param uuid the UUID
-     * @return the name or {@code null} if it is not known
+     * @return the profile or {@code null} if it is not known
      */
     @Nullable
     Profile getIfPresent(UUID uuid);
 
     /**
-     * Query the cache for the names of the given UUIDs.
+     * Query the cache for the profile for a given name.
+     *
+     * <p>If the operation fails, an error will be logged but no exception
+     * will be thrown.</p>
+     *
+     * @param name the name
+     * @return the profile or {@code null} if it is not known
+     */
+    @Nullable
+    Profile getIfPresentByName(String name);
+
+    /**
+     * Query the cache for the profiles of the given UUIDs.
      *
      * <p>If the operation fails, an error will be logged but no exception
      * will be thrown.</p>
@@ -73,4 +85,14 @@ public interface ProfileCache {
      */
     ImmutableMap<UUID, Profile> getAllPresent(Iterable<UUID> ids);
 
+    /**
+     * Query the cache for the profiles of the given names.
+     *
+     * <p>If the operation fails, an error will be logged but no exception
+     * will be thrown.</p>
+     *
+     * @param names a list of names to query
+     * @return a map of results, which may not have a key for every given name
+     */
+    ImmutableMap<String, Profile> getAllPresentByName(Iterable<String> names);
 }

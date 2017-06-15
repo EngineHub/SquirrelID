@@ -21,11 +21,15 @@ package com.sk89q.squirrelid.resolver;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.sk89q.squirrelid.Profile;
 import com.sk89q.squirrelid.cache.ProfileCache;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -59,20 +63,38 @@ public class CacheForwardingService implements ProfileService {
     @Nullable
     @Override
     public Profile findByName(String name) throws IOException, InterruptedException {
-        Profile profile = resolver.findByName(name);
-        if (profile != null) {
-            cache.put(profile);
+        Profile profile;
+        if ((profile = cache.getIfPresentByName(name)) == null) {
+            profile = resolver.findByName(name);
+            if (profile != null) {
+                cache.put(profile);
+            }
         }
         return profile;
     }
 
     @Override
     public ImmutableList<Profile> findAllByName(Iterable<String> names) throws IOException, InterruptedException {
-        ImmutableList<Profile> profiles = resolver.findAllByName(names);
-        for (Profile profile : profiles) {
+        ImmutableMap<String, Profile> present = cache.getAllPresentByName(names);
+        if (present.size() == Iterables.size(names)) {
+            // all names were found
+            return ImmutableList.copyOf(present.values());
+        }
+        // if not, figure out which names are missing from cache
+        List<String> missingNames = Lists.newArrayList();
+        for (String name : names) {
+            if (!present.containsKey(name)) {
+                missingNames.add(name);
+            }
+        }
+        // and look up those names
+        ImmutableList<Profile> lookup = resolver.findAllByName(missingNames);
+        for (Profile profile : lookup) {
             cache.put(profile);
         }
-        return profiles;
+
+        // return the cached + looked-up names together
+        return ImmutableList.<Profile>builder().addAll(present.values()).addAll(lookup).build();
     }
 
     @Override

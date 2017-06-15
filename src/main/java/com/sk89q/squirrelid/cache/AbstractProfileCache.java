@@ -42,4 +42,9 @@ abstract class AbstractProfileCache implements ProfileCache {
         return getAllPresent(Arrays.asList(uuid)).get(uuid);
     }
 
+    @Nullable
+    @Override
+    public Profile getIfPresentByName(String name) {
+        return getAllPresentByName(Arrays.asList(name)).get(name);
+    }
 }

@@ -120,15 +120,24 @@ public class SQLiteCache extends AbstractProfileCache {
         }
     }
 
-    @Override
-    public ImmutableMap<UUID, Profile> getAllPresent(Iterable<UUID> uuids) {
+    private <T> ImmutableMap<T, Profile> getAllPresent(Iterable<T> elems, KeyType keyType) {
         try {
-            return executeGet(uuids);
+            return executeGet(elems, keyType);
         } catch (SQLException e) {
             log.log(Level.WARNING, "Failed to execute queries", e);
         }
 
         return ImmutableMap.of();
+    }
+
+    @Override
+    public ImmutableMap<UUID, Profile> getAllPresent(Iterable<UUID> uuids) {
+        return getAllPresent(uuids, KeyType.UUID);
+    }
+
+    @Override
+    public ImmutableMap<String, Profile> getAllPresentByName(Iterable<String> names) {
+        return getAllPresent(names, KeyType.NAME);
     }
 
     protected synchronized void executePut(Iterable<Profile> profiles) throws SQLException {
@@ -139,18 +148,29 @@ public class SQLiteCache extends AbstractProfileCache {
         }
     }
 
-    protected ImmutableMap<UUID, Profile> executeGet(Iterable<UUID> uuids) throws SQLException {
+    private enum KeyType {
+        UUID("uuid"),
+        NAME("name");
+
+        private final String sqlCol;
+
+        KeyType(String sqlCol) {
+            this.sqlCol = sqlCol;
+        }
+    }
+
+    protected <T> ImmutableMap<T, Profile> executeGet(Iterable<T> keys, KeyType keyType) throws SQLException {
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT name, uuid FROM uuid_cache WHERE uuid IN (");
+        builder.append("SELECT name, uuid FROM uuid_cache WHERE ").append(keyType.sqlCol).append(" IN (");
 
         boolean first = true;
-        for (UUID uuid : uuids) {
-            checkNotNull(uuid, "Unexpected null UUID");
-            
+        for (T key : keys) {
+            checkNotNull(key, "Unexpected null key");
+
             if (!first) {
                 builder.append(", ");
             }
-            builder.append("'").append(uuid).append("'");
+            builder.append("'").append(key).append("'");
             first = false;
         }
 
@@ -166,11 +186,12 @@ public class SQLiteCache extends AbstractProfileCache {
             Statement stmt = conn.createStatement();
             try {
                 ResultSet rs = stmt.executeQuery(builder.toString());
-                Map<UUID, Profile> map = new HashMap<UUID, Profile>();
+                Map<T, Profile> map = new HashMap<T, Profile>();
 
                 while (rs.next()) {
                     UUID uniqueId = UUID.fromString(rs.getString("uuid"));
-                    map.put(uniqueId, new Profile(uniqueId, rs.getString("name")));
+                    String name = rs.getString("name");
+                    map.put((T) (keyType == KeyType.UUID ? uniqueId : name), new Profile(uniqueId, name));
                 }
 
                 return ImmutableMap.copyOf(map);
