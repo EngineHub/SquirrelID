@@ -105,7 +105,7 @@ Note: We recommend shading or shadowing in SquirrelID for distribution, **reloca
     <dependency>
         <groupId>com.sk89q</groupId>
         <artifactId>squirrelid</artifactId>
-        <version>0.1.0</version>
+        <version>0.2.0</version>
         <scope>compile</scope>
         <type>jar</type>
     </dependency>
@@ -120,7 +120,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.sk89q:squirrelid:0.1.0'
+    compile 'com.sk89q:squirrelid:0.2.0'
 }
 ```
 
