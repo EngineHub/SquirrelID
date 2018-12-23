@@ -19,17 +19,18 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import com.google.common.base.Predicate;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.collect.ImmutableList;
 import com.sk89q.squirrelid.Profile;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import javax.annotation.Nullable;
 
 /**
  * Combines several {@code ProfileService}s together and checks them from
@@ -83,8 +84,8 @@ public class CombinedProfileService implements ProfileService {
 
     @Override
     public ImmutableList<Profile> findAllByName(Iterable<String> names) throws IOException, InterruptedException {
-        List<String> missing = new ArrayList<String>();
-        List<Profile> totalResults = new ArrayList<Profile>();
+        List<String> missing = new ArrayList<>();
+        List<Profile> totalResults = new ArrayList<>();
 
         for (String name : names) {
             missing.add(name.toLowerCase());
@@ -95,9 +96,7 @@ public class CombinedProfileService implements ProfileService {
 
             for (Profile profile : results) {
                 String nameLower = profile.getName().toLowerCase();
-                if (missing.contains(nameLower)) {
-                    missing.remove(nameLower);
-                }
+                missing.remove(nameLower);
                 totalResults.add(profile);
             }
 
@@ -111,14 +110,11 @@ public class CombinedProfileService implements ProfileService {
 
     @Override
     public void findAllByName(Iterable<String> names, final Predicate<Profile> consumer) throws IOException, InterruptedException {
-        final List<String> missing = Collections.synchronizedList(new ArrayList<String>());
+        final List<String> missing = Collections.synchronizedList(new ArrayList<>());
 
-        Predicate<Profile> forwardingConsumer = new Predicate<Profile>() {
-            @Override
-            public boolean apply(Profile profile) {
-                missing.remove(profile.getName().toLowerCase());
-                return consumer.apply(profile);
-            }
+        Predicate<Profile> forwardingConsumer = profile -> {
+            missing.remove(profile.getName().toLowerCase());
+            return consumer.test(profile);
         };
 
         for (String name : names) {
@@ -126,7 +122,7 @@ public class CombinedProfileService implements ProfileService {
         }
 
         for (ProfileService service : services) {
-            service.findAllByName(new ArrayList<String>(missing), forwardingConsumer);
+            service.findAllByName(new ArrayList<>(missing), forwardingConsumer);
 
             if (missing.isEmpty()) {
                 break;

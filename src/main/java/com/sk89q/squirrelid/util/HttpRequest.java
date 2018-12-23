@@ -21,12 +21,8 @@ package com.sk89q.squirrelid.util;
 
 import org.json.simple.JSONValue;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataOutputStream;
@@ -58,7 +54,7 @@ public class HttpRequest implements Closeable {
     private static final int READ_TIMEOUT = 1000 * 60 * 10;
     private static final int READ_BUFFER_SIZE = 1024 * 8;
 
-    private final Map<String, String> headers = new HashMap<String, String>();
+    private final Map<String, String> headers = new HashMap<>();
     private final String method;
     private final URL url;
     private String contentType;
@@ -116,7 +112,7 @@ public class HttpRequest implements Closeable {
 
     /**
      * Execute the request.
-     * <p/>
+     *
      * After execution, {@link #close()} should be called.
      *
      * @return this object
@@ -366,7 +362,7 @@ public class HttpRequest implements Closeable {
      * Used with {@link #bodyForm(Form)}.
      */
     public final static class Form {
-        public final List<String> elements = new ArrayList<String>();
+        public final List<String> elements = new ArrayList<>();
 
         private Form() {
         }
@@ -452,24 +448,6 @@ public class HttpRequest implements Closeable {
          */
         public Object asJson() throws IOException {
             return JSONValue.parse(asString("UTF-8"));
-        }
-
-        /**
-         * Return the result as an instance of the given class that has been
-         * deserialized from a XML payload.
-         *
-         * @return the object
-         * @throws java.io.IOException on I/O error
-         */
-        @SuppressWarnings("unchecked")
-        public <T> T asXml(Class<T> cls) throws IOException {
-            try {
-                JAXBContext context = JAXBContext.newInstance(cls);
-                Unmarshaller um = context.createUnmarshaller();
-                return (T) um.unmarshal(new ByteArrayInputStream(data));
-            } catch (JAXBException e) {
-                throw new IOException(e);
-            }
         }
 
         /**

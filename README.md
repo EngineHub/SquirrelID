@@ -152,4 +152,5 @@ Links
 -----
 
 * [Visit our website](http://www.enginehub.org/)
+* [Discord Guild](https://discord.gg/YKbmj7V)
 * [IRC channel](http://skq.me/irc/irc.esper.net/sk89q/) (#sk89q on irc.esper.net)

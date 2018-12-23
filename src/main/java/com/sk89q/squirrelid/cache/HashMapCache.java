@@ -35,7 +35,7 @@ public class HashMapCache extends AbstractProfileCache {
 
     // Cannot use Guava because the cache classes are still @Beta
     // in Guava 10.0.1 and will change
-    private final ConcurrentMap<UUID, String> cache = new ConcurrentHashMap<UUID, String>();
+    private final ConcurrentMap<UUID, String> cache = new ConcurrentHashMap<>();
 
     @Override
     public void putAll(Iterable<Profile> profiles) {
@@ -46,7 +46,7 @@ public class HashMapCache extends AbstractProfileCache {
 
     @Override
     public ImmutableMap<UUID, Profile> getAllPresent(Iterable<UUID> uuids) {
-        Map<UUID, Profile> results = new HashMap<UUID, Profile>();
+        Map<UUID, Profile> results = new HashMap<>();
         for (UUID uuid : uuids) {
             String name = cache.get(uuid);
             if (name != null) {

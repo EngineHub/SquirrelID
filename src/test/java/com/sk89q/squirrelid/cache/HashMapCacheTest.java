@@ -19,6 +19,7 @@
 
 package com.sk89q.squirrelid.cache;
 
+import com.google.common.collect.Lists;
 import com.sk89q.squirrelid.Profile;
 import com.sk89q.squirrelid.util.ExtraMatchers;
 import org.hamcrest.MatcherAssert;
@@ -42,14 +43,14 @@ public class HashMapCacheTest {
 
         MatcherAssert.assertThat(
                 cache.getAllPresent(Arrays.asList(testId1, testId2, testId3)),
-                ExtraMatchers.<UUID, Profile>hasSize(0));
+                ExtraMatchers.hasSize(0));
 
         cache.putAll(Arrays.asList(
                 new Profile(testId1, "test1"),
                 new Profile(testId2, "test2")));
 
         assertThat(
-                cache.getAllPresent(Arrays.asList(testId1)),
+                cache.getAllPresent(Lists.newArrayList(testId1)),
                 allOf(
                         ExtraMatchers.<UUID, Profile>hasSize(1),
                         hasEntry(testId1, new Profile(testId1, "test1"))));

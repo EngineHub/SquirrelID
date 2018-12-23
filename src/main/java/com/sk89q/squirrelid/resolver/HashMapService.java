@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class HashMapService extends SingleRequestService {
 
-    private final ConcurrentHashMap<String, UUID> map = new ConcurrentHashMap<String, UUID>();
+    private final ConcurrentHashMap<String, UUID> map = new ConcurrentHashMap<>();
 
     /**
      * Create a new instance.

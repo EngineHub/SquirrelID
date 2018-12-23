@@ -19,17 +19,17 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import com.sk89q.squirrelid.Profile;
-import org.hamcrest.Matchers;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.UUID;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+
+import com.google.common.collect.Lists;
+import com.sk89q.squirrelid.Profile;
+import org.hamcrest.Matchers;
+import org.junit.Test;
+
+import java.util.UUID;
 
 public class CombinedProfileServiceTest {
 
@@ -49,7 +49,7 @@ public class CombinedProfileServiceTest {
                 equalTo(notchProfile));
 
         assertThat(
-                resolver.findAllByName(Arrays.asList("Notch")),
+                resolver.findAllByName(Lists.newArrayList("Notch")),
                 allOf(
                         Matchers.<Profile>hasSize(1),
                         containsInAnyOrder(notchProfile)));
@@ -61,7 +61,7 @@ public class CombinedProfileServiceTest {
                 equalTo(notchProfile));
 
         assertThat(
-                resolver.findAllByName(Arrays.asList("Notch")),
+                resolver.findAllByName(Lists.newArrayList("Notch")),
                 allOf(
                         Matchers.<Profile>hasSize(1),
                         containsInAnyOrder(notchProfile)));
@@ -73,7 +73,7 @@ public class CombinedProfileServiceTest {
                 equalTo(fakeNotchProfile));
 
         assertThat(
-                resolver.findAllByName(Arrays.asList("Notch")),
+                resolver.findAllByName(Lists.newArrayList("Notch")),
                 allOf(
                         Matchers.<Profile>hasSize(1),
                         containsInAnyOrder(fakeNotchProfile)));

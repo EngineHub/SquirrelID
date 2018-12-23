@@ -54,6 +54,7 @@ public class SQLiteCache extends AbstractProfileCache {
      * Create a new instance.
      *
      * @param file the path to a SQLite file to use
+     * @throws IOException if the database failed
      */
     public SQLiteCache(File file) throws IOException {
         checkNotNull(file);
@@ -163,10 +164,9 @@ public class SQLiteCache extends AbstractProfileCache {
 
         synchronized (this) {
             Connection conn = getConnection();
-            Statement stmt = conn.createStatement();
-            try {
+            try (Statement stmt = conn.createStatement()) {
                 ResultSet rs = stmt.executeQuery(builder.toString());
-                Map<UUID, Profile> map = new HashMap<UUID, Profile>();
+                Map<UUID, Profile> map = new HashMap<>();
 
                 while (rs.next()) {
                     UUID uniqueId = UUID.fromString(rs.getString("uuid"));
@@ -174,8 +174,6 @@ public class SQLiteCache extends AbstractProfileCache {
                 }
 
                 return ImmutableMap.copyOf(map);
-            } finally {
-                stmt.close();
             }
         }
     }

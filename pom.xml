@@ -150,7 +150,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>2.12</version>
+        <version>3.0.0</version>
         <executions>
           <execution>
             <id>verify-style</id>
@@ -161,7 +161,8 @@
           </execution>
         </executions>
         <configuration>
-          <sourceDirectory>${basedir}/src</sourceDirectory>
+          <sourceDirectories>${basedir}/src</sourceDirectories>
+          <testSourceDirectories>${basedir}/test</testSourceDirectories>
           <configLocation>${project.basedir}/config/checkstyle/checkstyle.xml</configLocation>
           <propertyExpansion>basedir=${basedir}</propertyExpansion>
           <consoleOutput>true</consoleOutput>
@@ -173,17 +174,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
+        <version>3.8.0</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>2.2.1</version>
+        <version>3.0.1</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -197,7 +198,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.8.1</version>
+        <version>3.0.1</version>
         <executions>
           <execution>
             <id>attach-javadocs</id>

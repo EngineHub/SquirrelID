@@ -19,6 +19,7 @@
 
 package com.sk89q.squirrelid.resolver;
 
+import com.google.common.collect.Lists;
 import com.sk89q.squirrelid.Profile;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -47,8 +48,8 @@ public class HashMapServiceTest {
                 equalTo(null));
 
         assertThat(
-                resolver.findAllByName(Arrays.asList("Notch")),
-                Matchers.<Profile>hasSize(0));
+                resolver.findAllByName(Lists.newArrayList("Notch")),
+                Matchers.hasSize(0));
 
         resolver.put(notchProfile);
 
@@ -57,7 +58,7 @@ public class HashMapServiceTest {
                 equalTo(notchProfile));
 
         assertThat(
-                resolver.findAllByName(Arrays.asList("Notch")),
+                resolver.findAllByName(Lists.newArrayList("Notch")),
                 allOf(
                         Matchers.<Profile>hasSize(1),
                         containsInAnyOrder(notchProfile)));

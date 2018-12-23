@@ -19,24 +19,24 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import com.google.common.base.Predicate;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
 import com.sk89q.squirrelid.Profile;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Predicate;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import javax.annotation.Nullable;
 
 /**
  * Resolves profiles with several parallel threads using another resolver.
@@ -112,16 +112,11 @@ public class ParallelProfileService implements ProfileService {
 
     @Override
     public ImmutableList<Profile> findAllByName(Iterable<String> names) throws IOException, InterruptedException {
-        CompletionService<List<Profile>> completion = new ExecutorCompletionService<List<Profile>>(executorService);
+        CompletionService<List<Profile>> completion = new ExecutorCompletionService<>(executorService);
         int count = 0;
         for (final List<String> partition : Iterables.partition(names, getEffectiveProfilesPerJob())) {
             count++;
-            completion.submit(new Callable<List<Profile>>() {
-                @Override
-                public List<Profile> call() throws Exception {
-                    return resolver.findAllByName(partition);
-                }
-            });
+            completion.submit(() -> resolver.findAllByName(partition));
         }
 
         Builder<Profile> builder = ImmutableList.builder();
@@ -141,16 +136,13 @@ public class ParallelProfileService implements ProfileService {
 
     @Override
     public void findAllByName(Iterable<String> names, final Predicate<Profile> consumer) throws IOException, InterruptedException {
-        CompletionService<Object> completion = new ExecutorCompletionService<Object>(executorService);
+        CompletionService<Object> completion = new ExecutorCompletionService<>(executorService);
         int count = 0;
         for (final List<String> partition : Iterables.partition(names, getEffectiveProfilesPerJob())) {
             count++;
-            completion.submit(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    resolver.findAllByName(partition, consumer);
-                    return null;
-                }
+            completion.submit(() -> {
+                resolver.findAllByName(partition, consumer);
+                return null;
             });
         }
 

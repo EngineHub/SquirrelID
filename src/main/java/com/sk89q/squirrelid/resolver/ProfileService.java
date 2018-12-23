@@ -19,12 +19,13 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.sk89q.squirrelid.Profile;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
 
 /**
  * Resolves names into UUIDs.

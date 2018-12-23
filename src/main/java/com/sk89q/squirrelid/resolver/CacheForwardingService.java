@@ -19,15 +19,16 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import com.google.common.base.Predicate;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.collect.ImmutableList;
 import com.sk89q.squirrelid.Profile;
 import com.sk89q.squirrelid.cache.ProfileCache;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.function.Predicate;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import javax.annotation.Nullable;
 
 /**
  * Resolves UUIDs using another resolver and stores results to a cache.
@@ -77,12 +78,9 @@ public class CacheForwardingService implements ProfileService {
 
     @Override
     public void findAllByName(Iterable<String> names, final Predicate<Profile> consumer) throws IOException, InterruptedException {
-        resolver.findAllByName(names, new Predicate<Profile>() {
-            @Override
-            public boolean apply(@Nullable Profile input) {
-                cache.put(input);
-                return consumer.apply(input);
-            }
+        resolver.findAllByName(names, input -> {
+            cache.put(input);
+            return consumer.test(input);
         });
     }
 }

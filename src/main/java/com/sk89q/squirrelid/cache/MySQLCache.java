@@ -23,7 +23,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
-
 import com.sk89q.squirrelid.Profile;
 
 import java.sql.Connection;
@@ -51,208 +50,202 @@ import javax.sql.DataSource;
  */
 public class MySQLCache extends AbstractProfileCache {
 
-  public static final String TABLE_NAME = "uuid_cache";
-  private static final Logger log = Logger.getLogger(MySQLCache.class.getCanonicalName());
-  private final String tableName;
-  private final String queryString;
-  private DataSource dataSource;
-  private Connection connection;
+    public static final String TABLE_NAME = "uuid_cache";
+    private static final Logger log = Logger.getLogger(MySQLCache.class.getCanonicalName());
+    private final String tableName;
+    private final String queryString;
+    private DataSource dataSource;
+    private Connection connection;
 
-  /**
-   * Creates an instance of {@link MySQLCache} with a {@link DataSource}. The provided {@link
-   * DataSource} is used for getting a connection using {@link DataSource#getConnection()}. Once a
-   * {@link Connection} is done with, it is then closed, calling {@link Connection#close()}. The
-   * table name used for caching is {@link #TABLE_NAME}.
-   *
-   * @param dataSource data source to use for interacting with the mysql database
-   *
-   * @return the newly constructed {@link MySQLCache}
-   *
-   * @throws SQLException thrown if an error occurs whilst creating the tables
-   */
-  public static MySQLCache create(@Nonnull DataSource dataSource)
-      throws SQLException {
-    checkNotNull(dataSource, "dataSource cannot be null.");
-    return new MySQLCache(dataSource, TABLE_NAME);
-  }
+    private MySQLCache(@Nonnull Object o, @Nonnull String tableName) throws SQLException {
+        checkNotNull(o);
+        checkNotNull(tableName, "tableName cannot be null.");
+        checkArgument(!tableName.isEmpty(), "tableName cannot be empty.");
 
-  /**
-   * Creates an instance of {@link MySQLCache} with a {@link DataSource}. The provided {@link
-   * DataSource} is used for getting a connection using {@link DataSource#getConnection()}. Once a
-   * {@link Connection} is done with, it is then closed, calling {@link Connection#close()}.
-   *
-   * @param dataSource data source to use for interacting with the mysql database
-   * @param tableName name of the table that will cache the name and uuids
-   *
-   * @return the newly constructed {@link MySQLCache}
-   *
-   * @throws SQLException thrown if an error occurs whilst creating the tables
-   */
-  public static MySQLCache create(@Nonnull DataSource dataSource, @Nonnull String tableName)
-      throws SQLException {
-    checkNotNull(dataSource, "dataSource cannot be null.");
-    return new MySQLCache(dataSource, tableName);
-  }
-
-  /**
-   * Creates an instance of {@link MySQLCache} with a {@link Connection}. The table name used for
-   * caching is {@link #TABLE_NAME}.
-   *
-   * @param connection connection to use for interacting with the mysql database
-   *
-   * @return the newly constructed {@link MySQLCache}
-   *
-   * @throws SQLException thrown if an error occurs whilst creating the tables
-   */
-  public static MySQLCache create(@Nonnull Connection connection)
-      throws SQLException {
-    checkNotNull(connection, "connection cannot be null.");
-    return new MySQLCache(connection, TABLE_NAME);
-  }
-
-  /**
-   * Creates an instance of {@link MySQLCache} with a {@link Connection}.
-   *
-   * @param connection connection to use for interacting with the mysql database
-   * @param tableName name of the table that will cache the name and uuids
-   *
-   * @return the newly constructed {@link MySQLCache}
-   *
-   * @throws SQLException thrown if an error occurs whilst creating the tables
-   */
-  public static MySQLCache create(@Nonnull Connection connection, @Nonnull String tableName)
-      throws SQLException {
-    checkNotNull(connection, "connection cannot be null.");
-    return new MySQLCache(connection, tableName);
-  }
-
-  private MySQLCache(@Nonnull Object o, @Nonnull String tableName) throws SQLException {
-    checkNotNull(o);
-    checkNotNull(tableName, "tableName cannot be null.");
-    checkArgument(!tableName.isEmpty(), "tableName cannot be empty.");
-
-    if (o instanceof Connection) {
-      this.connection = ((Connection) o);
-    } else {
-      this.dataSource = ((DataSource) o);
-    }
-    this.tableName = tableName;
-    this.queryString = "REPLACE INTO `" + tableName + "` (uuid, name) VALUES (?, ?)";
-    createTable();
-  }
-
-  @Override
-  public void putAll(Iterable<Profile> profiles) {
-    try {
-      executePut(profiles);
-    } catch (SQLException e) {
-      log.log(Level.WARNING, "Failed to execute queries", e);
-    }
-  }
-
-  @Override
-  public ImmutableMap<UUID, Profile> getAllPresent(Iterable<UUID> ids) {
-    try {
-      return executeGet(ids);
-    } catch (SQLException e) {
-      log.log(Level.WARNING, "Failed to execute queries", e);
+        if (o instanceof Connection) {
+            this.connection = ((Connection) o);
+        } else {
+            this.dataSource = ((DataSource) o);
+        }
+        this.tableName = tableName;
+        this.queryString = "REPLACE INTO `" + tableName + "` (uuid, name) VALUES (?, ?)";
+        createTable();
     }
 
-    return ImmutableMap.of();
-  }
-
-  /**
-   * Create the necessary tables and indices if they do not exist yet. This method is called when a
-   * new instance of {@link MySQLCache} is created.
-   *
-   * @throws SQLException thrown on error
-   */
-  public void createTable() throws SQLException {
-    Connection conn = getConnection();
-    Statement stmt = conn.createStatement();
-    try {
-      stmt.executeUpdate(
-          "CREATE TABLE IF NOT EXISTS `" + this.tableName + "` ("
-          + "`uuid` CHAR(36) PRIMARY KEY NOT NULL, "
-          + "`name` VARCHAR(16) NOT NULL UNIQUE KEY)");
-    } catch (SQLException e) {
-      throw new SQLException("Failed to create table.", e);
-    } finally {
-      close(conn);
-      stmt.close();
-    }
-  }
-
-  protected synchronized void executePut(Iterable<Profile> profiles) throws SQLException {
-    Connection conn = getConnection();
-    PreparedStatement stmt = conn.prepareStatement(this.queryString);
-    try {
-      for (Profile profile : profiles) {
-        stmt.setString(1, profile.getUniqueId().toString());
-        stmt.setString(2, profile.getName());
-        stmt.addBatch();
-      }
-      stmt.executeBatch();
-    } finally {
-      close(conn);
-      stmt.close();
-    }
-  }
-
-  protected ImmutableMap<UUID, Profile> executeGet(Iterable<UUID> ids) throws SQLException {
-    Iterator<UUID> it = ids.iterator();
-    // It was an empty collection
-    if (!it.hasNext()) {
-      return ImmutableMap.of();
+    /**
+     * Creates an instance of {@link MySQLCache} with a {@link DataSource}. The provided {@link
+     * DataSource} is used for getting a connection using {@link DataSource#getConnection()}. Once a
+     * {@link Connection} is done with, it is then closed, calling {@link Connection#close()}. The
+     * table name used for caching is {@link #TABLE_NAME}.
+     *
+     * @param dataSource data source to use for interacting with the mysql database
+     *
+     * @return the newly constructed {@link MySQLCache}
+     *
+     * @throws SQLException thrown if an error occurs whilst creating the tables
+     */
+    public static MySQLCache create(@Nonnull DataSource dataSource)
+            throws SQLException {
+        checkNotNull(dataSource, "dataSource cannot be null.");
+        return new MySQLCache(dataSource, TABLE_NAME);
     }
 
-    StringBuilder builder = new StringBuilder();
-    // SELECT ... WHERE ... IN ('abc', 'def', 'ghi');
-    builder.append("SELECT name, uuid FROM `").append(this.tableName).append("` WHERE uuid IN ('");
-    Joiner.on("', '").skipNulls().appendTo(builder, ids);
-    builder.append("');");
+    /**
+     * Creates an instance of {@link MySQLCache} with a {@link DataSource}. The provided {@link
+     * DataSource} is used for getting a connection using {@link DataSource#getConnection()}. Once a
+     * {@link Connection} is done with, it is then closed, calling {@link Connection#close()}.
+     *
+     * @param dataSource data source to use for interacting with the mysql database
+     * @param tableName name of the table that will cache the name and uuids
+     *
+     * @return the newly constructed {@link MySQLCache}
+     *
+     * @throws SQLException thrown if an error occurs whilst creating the tables
+     */
+    public static MySQLCache create(@Nonnull DataSource dataSource, @Nonnull String tableName)
+            throws SQLException {
+        checkNotNull(dataSource, "dataSource cannot be null.");
+        return new MySQLCache(dataSource, tableName);
+    }
 
-    synchronized (this) {
-      Connection conn = getConnection();
-      Statement stmt = conn.createStatement();
-      try {
-        ResultSet rs = stmt.executeQuery(builder.toString());
-        Map<UUID, Profile> map = new HashMap<UUID, Profile>();
+    /**
+     * Creates an instance of {@link MySQLCache} with a {@link Connection}. The table name used for
+     * caching is {@link #TABLE_NAME}.
+     *
+     * @param connection connection to use for interacting with the mysql database
+     *
+     * @return the newly constructed {@link MySQLCache}
+     *
+     * @throws SQLException thrown if an error occurs whilst creating the tables
+     */
+    public static MySQLCache create(@Nonnull Connection connection)
+            throws SQLException {
+        checkNotNull(connection, "connection cannot be null.");
+        return new MySQLCache(connection, TABLE_NAME);
+    }
 
-        while (rs.next()) {
-          UUID uuid = UUID.fromString(rs.getString("uuid"));
-          map.put(uuid, new Profile(uuid, rs.getString("name")));
+    /**
+     * Creates an instance of {@link MySQLCache} with a {@link Connection}.
+     *
+     * @param connection connection to use for interacting with the mysql database
+     * @param tableName name of the table that will cache the name and uuids
+     *
+     * @return the newly constructed {@link MySQLCache}
+     *
+     * @throws SQLException thrown if an error occurs whilst creating the tables
+     */
+    public static MySQLCache create(@Nonnull Connection connection, @Nonnull String tableName)
+            throws SQLException {
+        checkNotNull(connection, "connection cannot be null.");
+        return new MySQLCache(connection, tableName);
+    }
+
+    @Override
+    public void putAll(Iterable<Profile> profiles) {
+        try {
+            executePut(profiles);
+        } catch (SQLException e) {
+            log.log(Level.WARNING, "Failed to execute queries", e);
+        }
+    }
+
+    @Override
+    public ImmutableMap<UUID, Profile> getAllPresent(Iterable<UUID> ids) {
+        try {
+            return executeGet(ids);
+        } catch (SQLException e) {
+            log.log(Level.WARNING, "Failed to execute queries", e);
         }
 
-        return ImmutableMap.copyOf(map);
-      } finally {
-        close(conn);
-        stmt.close();
-      }
+        return ImmutableMap.of();
     }
-  }
 
-  private Connection getConnection() throws SQLException {
-    if (this.connection != null) {
-      return this.connection;
+    /**
+     * Create the necessary tables and indices if they do not exist yet. This method is called when a
+     * new instance of {@link MySQLCache} is created.
+     *
+     * @throws SQLException thrown on error
+     */
+    public void createTable() throws SQLException {
+        Connection conn = getConnection();
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS `" + this.tableName + "` ("
+                            + "`uuid` CHAR(36) PRIMARY KEY NOT NULL, "
+                            + "`name` VARCHAR(16) NOT NULL UNIQUE KEY)");
+        } catch (SQLException e) {
+            throw new SQLException("Failed to create table.", e);
+        } finally {
+            close(conn);
+        }
     }
-    return this.dataSource.getConnection();
-  }
 
-  private void close(Connection connection) throws SQLException {
-    // Close the current connection if it was provided by the DataSource.
-    if (this.dataSource != null) {
-      connection.close();
+    protected synchronized void executePut(Iterable<Profile> profiles) throws SQLException {
+        Connection conn = getConnection();
+        try (PreparedStatement stmt = conn.prepareStatement(this.queryString)) {
+            for (Profile profile : profiles) {
+                stmt.setString(1, profile.getUniqueId().toString());
+                stmt.setString(2, profile.getName());
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+        } finally {
+            close(conn);
+        }
     }
-  }
 
-  /**
-   * Gets the table name this {@link MySQLCache} uses to cache uuids.
-   *
-   * @return table name
-   */
-  @Nonnull
-  public String getTableName() {
-    return tableName;
-  }
+    protected ImmutableMap<UUID, Profile> executeGet(Iterable<UUID> ids) throws SQLException {
+        Iterator<UUID> it = ids.iterator();
+        // It was an empty collection
+        if (!it.hasNext()) {
+            return ImmutableMap.of();
+        }
+
+        StringBuilder builder = new StringBuilder();
+        // SELECT ... WHERE ... IN ('abc', 'def', 'ghi');
+        builder.append("SELECT name, uuid FROM `").append(this.tableName).append("` WHERE uuid IN ('");
+        Joiner.on("', '").skipNulls().appendTo(builder, ids);
+        builder.append("');");
+
+        synchronized (this) {
+            Connection conn = getConnection();
+            try (Statement stmt = conn.createStatement()) {
+                ResultSet rs = stmt.executeQuery(builder.toString());
+                Map<UUID, Profile> map = new HashMap<>();
+
+                while (rs.next()) {
+                    UUID uuid = UUID.fromString(rs.getString("uuid"));
+                    map.put(uuid, new Profile(uuid, rs.getString("name")));
+                }
+
+                return ImmutableMap.copyOf(map);
+            } finally {
+                close(conn);
+            }
+        }
+    }
+
+    private Connection getConnection() throws SQLException {
+        if (this.connection != null) {
+            return this.connection;
+        }
+        return this.dataSource.getConnection();
+    }
+
+    private void close(Connection connection) throws SQLException {
+        // Close the current connection if it was provided by the DataSource.
+        if (this.dataSource != null) {
+            connection.close();
+        }
+    }
+
+    /**
+     * Gets the table name this {@link MySQLCache} uses to cache uuids.
+     *
+     * @return table name
+     */
+    @Nonnull
+    public String getTableName() {
+        return tableName;
+    }
 }

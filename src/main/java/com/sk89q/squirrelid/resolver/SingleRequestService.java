@@ -19,12 +19,12 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.sk89q.squirrelid.Profile;
 
 import java.io.IOException;
+import java.util.function.Predicate;
 
 /**
  * An abstract implementation for services that only work with one request
@@ -49,7 +49,7 @@ abstract class SingleRequestService implements ProfileService {
         for (String name : names) {
             Profile profile = findByName(name);
             if (profile != null) {
-                consumer.apply(profile);
+                consumer.test(profile);
             }
         }
     }

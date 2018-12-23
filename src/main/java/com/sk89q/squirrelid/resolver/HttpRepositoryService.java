@@ -19,7 +19,9 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import com.google.common.base.Predicate;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
@@ -27,7 +29,6 @@ import com.sk89q.squirrelid.Profile;
 import com.sk89q.squirrelid.util.HttpRequest;
 import com.sk89q.squirrelid.util.UUIDs;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -35,11 +36,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import javax.annotation.Nullable;
 
 /**
  * Resolves names in bulk to UUIDs using Mojang's profile HTTP API.
@@ -129,7 +130,7 @@ public class HttpRepositoryService implements ProfileService {
     public void findAllByName(Iterable<String> names, Predicate<Profile> consumer) throws IOException, InterruptedException {
         for (List<String> partition : Iterables.partition(names, MAX_NAMES_PER_REQUEST)) {
             for (Profile profile : query(partition)) {
-                consumer.apply(profile);
+                consumer.test(profile);
             }
         }
     }

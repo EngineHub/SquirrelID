@@ -46,7 +46,7 @@ public class CacheForwardingServiceTest {
 
         assertThat(
                 cache.getAllPresent(Arrays.asList(notchUuid, jebUuid)),
-                ExtraMatchers.<UUID, Profile>hasSize(0));
+                ExtraMatchers.hasSize(0));
 
         assertThat(
                 resolver.findAllByName(Arrays.asList("Notch", "jeb_")),
