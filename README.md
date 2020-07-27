@@ -127,9 +127,9 @@ dependencies {
 Compiling
 ---------
 
-Use Maven 3 to compile SquirrelID.
+Use Gradle to compile SquirrelID.
 
-    mvn clean package
+    gradlew build
 
 Some of the unit tests are actually integration tests and therefore make
 contact with Mojang's servers. That means that the tests may take a
@@ -139,7 +139,7 @@ so that this becomes no longer an issue.
 
 You can disable tests with:
 
-    mvn -DskipTests=true clean package
+    gradlew -x test build
 
 Contributing
 ------------
