@@ -1,4 +1,4 @@
-SquirrelID
+![SquirrelID](squirrelid-header.png)
 ==========
 
 SquirrelID is a Java library for working with Mojang profiles.
@@ -94,8 +94,8 @@ Note: We recommend shading or shadowing in SquirrelID for distribution, **reloca
 ```xml
 <repositories>
     <repository>
-        <id>sk89q-repo</id>
-        <url>http://maven.sk89q.com/repo/</url>
+        <id>enginehub-repo</id>
+        <url>https://maven.enginehub.org/repo/</url>
     </repository>
 </repositories>
 ```
@@ -116,7 +116,7 @@ Note: We recommend shading or shadowing in SquirrelID for distribution, **reloca
 
 ```groovy
 repositories {
-    maven { url "http://maven.sk89q.com/repo/" }
+    maven { url "https://maven.enginehub.org/repo/" }
 }
 
 dependencies {
@@ -151,6 +151,5 @@ We happily accept contributions, especially through pull requests on GitHub.
 Links
 -----
 
-* [Visit our website](http://www.enginehub.org/)
-* [Discord Guild](https://discord.gg/YKbmj7V)
-* [IRC channel](http://skq.me/irc/irc.esper.net/sk89q/) (#sk89q on irc.esper.net)
+* [Visit our website](https://enginehub.org/)
+* [Discord Guild](https://discord.gg/enginehub)

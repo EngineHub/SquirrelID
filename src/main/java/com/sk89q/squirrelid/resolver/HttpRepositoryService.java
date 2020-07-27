@@ -118,7 +118,7 @@ public class HttpRepositoryService implements ProfileService {
     @Nullable
     @Override
     public Profile findByName(String name) throws IOException, InterruptedException {
-        ImmutableList<Profile> profiles = findAllByName(Arrays.asList(name));
+        ImmutableList<Profile> profiles = findAllByName(ImmutableList.of(name));
         if (!profiles.isEmpty()) {
             return profiles.get(0);
         } else {
@@ -153,7 +153,7 @@ public class HttpRepositoryService implements ProfileService {
      * @throws InterruptedException thrown on interruption
      */
     protected ImmutableList<Profile> query(Iterable<String> names) throws IOException, InterruptedException {
-        List<Profile> profiles = new ArrayList<Profile>();
+        List<Profile> profiles = new ArrayList<>();
 
         Object result;
 
@@ -209,9 +209,7 @@ public class HttpRepositoryService implements ProfileService {
                     return new Profile(uuid, name);
                 }
             }
-        } catch (ClassCastException e) {
-            log.log(Level.WARNING, "Got invalid value from UUID lookup service", e);
-        } catch (IllegalArgumentException e) {
+        } catch (ClassCastException | IllegalArgumentException e) {
             log.log(Level.WARNING, "Got invalid value from UUID lookup service", e);
         }
 

@@ -351,9 +351,7 @@ public class HttpRequest implements Closeable {
                     url.getPath(), url.getQuery(), url.getRef());
             url = uri.toURL();
             return url;
-        } catch (MalformedURLException e) {
-            return existing;
-        } catch (URISyntaxException e) {
+        } catch (MalformedURLException | URISyntaxException e) {
             return existing;
         }
     }
@@ -412,7 +410,7 @@ public class HttpRequest implements Closeable {
     /**
      * Used to buffer the response in memory.
      */
-    public class BufferedResponse {
+    public static class BufferedResponse {
         private final byte[] data;
 
         private BufferedResponse(byte[] data) {
