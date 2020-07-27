@@ -20,11 +20,9 @@
 package com.sk89q.squirrelid.cache;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.sk89q.squirrelid.Profile;
 
 import java.util.UUID;
-
 import javax.annotation.Nullable;
 
 /**
@@ -34,13 +32,13 @@ abstract class AbstractProfileCache implements ProfileCache {
 
     @Override
     public void put(Profile profile) {
-        putAll(ImmutableList.<Profile>builder().add(profile).build());
+        putAll(ImmutableList.of(profile));
     }
 
     @Nullable
     @Override
     public Profile getIfPresent(UUID uuid) {
-        return getAllPresent(Lists.newArrayList(uuid)).get(uuid);
+        return getAllPresent(ImmutableList.of(uuid)).get(uuid);
     }
 
 }

@@ -19,9 +19,6 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
@@ -35,8 +32,10 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
-
 import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Resolves profiles with several parallel threads using another resolver.
@@ -65,10 +64,10 @@ public class ParallelProfileService implements ProfileService {
      * Create a new parallel resolver.
      *
      * @param resolver the resolver to use
-     * @param nThreads the number of threads to resolve profiles in
+     * @param numThreads the number of threads to resolve profiles in
      */
-    public ParallelProfileService(ProfileService resolver, int nThreads) {
-        this(resolver, Executors.newFixedThreadPool(nThreads));
+    public ParallelProfileService(ProfileService resolver, int numThreads) {
+        this(resolver, Executors.newFixedThreadPool(numThreads));
     }
 
     /**

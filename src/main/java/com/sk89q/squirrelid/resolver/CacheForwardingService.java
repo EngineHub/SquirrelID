@@ -19,16 +19,15 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.collect.ImmutableList;
 import com.sk89q.squirrelid.Profile;
 import com.sk89q.squirrelid.cache.ProfileCache;
 
 import java.io.IOException;
 import java.util.function.Predicate;
-
 import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Resolves UUIDs using another resolver and stores results to a cache.

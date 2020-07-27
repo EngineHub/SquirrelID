@@ -19,8 +19,6 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.collect.ImmutableList;
 import com.sk89q.squirrelid.Profile;
 
@@ -28,9 +26,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Predicate;
-
 import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Combines several {@code ProfileService}s together and checks them from
@@ -88,14 +88,14 @@ public class CombinedProfileService implements ProfileService {
         List<Profile> totalResults = new ArrayList<>();
 
         for (String name : names) {
-            missing.add(name.toLowerCase());
+            missing.add(name.toLowerCase(Locale.US));
         }
 
         for (ProfileService service : services) {
             ImmutableList<Profile> results = service.findAllByName(missing);
 
             for (Profile profile : results) {
-                String nameLower = profile.getName().toLowerCase();
+                String nameLower = profile.getName().toLowerCase(Locale.US);
                 missing.remove(nameLower);
                 totalResults.add(profile);
             }
@@ -113,12 +113,12 @@ public class CombinedProfileService implements ProfileService {
         final List<String> missing = Collections.synchronizedList(new ArrayList<>());
 
         Predicate<Profile> forwardingConsumer = profile -> {
-            missing.remove(profile.getName().toLowerCase());
+            missing.remove(profile.getName().toLowerCase(Locale.US));
             return consumer.test(profile);
         };
 
         for (String name : names) {
-            missing.add(name.toLowerCase());
+            missing.add(name.toLowerCase(Locale.US));
         }
 
         for (ProfileService service : services) {

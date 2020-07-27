@@ -62,7 +62,7 @@ public class HttpRepositoryServiceTest {
                         containsInAnyOrder(notchProfile, jebProfile)));
 
         assertThat(
-                resolver.findAllByName(Arrays.asList("!__@#%*@#^(@6__NOBODY____", "jeb_")),
+                resolver.findAllByName(Arrays.asList("VNAYBMIl3xsMjEWk", "jeb_")),
                 allOf(
                         Matchers.<Profile>hasSize(1),
                         containsInAnyOrder(jebProfile)));

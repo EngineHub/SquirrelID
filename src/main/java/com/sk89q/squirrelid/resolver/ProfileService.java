@@ -24,7 +24,6 @@ import com.sk89q.squirrelid.Profile;
 
 import java.io.IOException;
 import java.util.function.Predicate;
-
 import javax.annotation.Nullable;
 
 /**

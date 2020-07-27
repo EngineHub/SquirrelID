@@ -66,11 +66,90 @@ public class HttpRequest implements Closeable {
      * Create a new HTTP request.
      *
      * @param method the method
-     * @param url    the URL
+     * @param url the URL
      */
     private HttpRequest(String method, URL url) {
         this.method = method;
         this.url = url;
+    }
+
+    /**
+     * Perform a GET request.
+     *
+     * @param url the URL
+     * @return a new request object
+     */
+    public static HttpRequest get(URL url) {
+        return request("GET", url);
+    }
+
+    /**
+     * Perform a POST request.
+     *
+     * @param url the URL
+     * @return a new request object
+     */
+    public static HttpRequest post(URL url) {
+        return request("POST", url);
+    }
+
+    /**
+     * Perform a request.
+     *
+     * @param method the method
+     * @param url the URL
+     * @return a new request object
+     */
+    public static HttpRequest request(String method, URL url) {
+        return new HttpRequest(method, url);
+    }
+
+    /**
+     * Create a new {@link java.net.URL} and throw a {@link RuntimeException} if the URL
+     * is not valid.
+     *
+     * @param url the url
+     * @return a URL object
+     * @throws RuntimeException if the URL is invalid
+     */
+    public static URL url(String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * URL may contain spaces and other nasties that will cause a failure.
+     *
+     * @param existing the existing URL to transform
+     * @return the new URL, or old one if there was a failure
+     */
+    private static URL reformat(URL existing) {
+        try {
+            URL url = new URL(existing.toString());
+            URI uri = new URI(
+                url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(),
+                url.getPath(), url.getQuery(), url.getRef());
+            url = uri.toURL();
+            return url;
+        } catch (MalformedURLException | URISyntaxException e) {
+            return existing;
+        }
+    }
+
+    private static void checkInterrupted() throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
+    }
+
+    private static void closeQuietly(Closeable closeable) {
+        try {
+            closeable.close();
+        } catch (IOException ignored) {
+        }
     }
 
     /**
@@ -101,7 +180,7 @@ public class HttpRequest implements Closeable {
     /**
      * Add a header.
      *
-     * @param key   the header key
+     * @param key the header key
      * @param value the header value
      * @return this object
      */
@@ -113,7 +192,9 @@ public class HttpRequest implements Closeable {
     /**
      * Execute the request.
      *
+     * <p>
      * After execution, {@link #close()} should be called.
+     * </p>
      *
      * @return this object
      * @throws java.io.IOException on I/O error
@@ -152,8 +233,9 @@ public class HttpRequest implements Closeable {
                 out.close();
             }
 
-            inputStream = conn.getResponseCode() == HttpURLConnection.HTTP_OK ?
-                    conn.getInputStream() : conn.getErrorStream();
+            inputStream = conn.getResponseCode() == HttpURLConnection.HTTP_OK
+                ? conn.getInputStream()
+                : conn.getErrorStream();
 
             successful = true;
         } finally {
@@ -212,7 +294,7 @@ public class HttpRequest implements Closeable {
      * Buffer the returned response.
      *
      * @return the buffered response
-     * @throws java.io.IOException  on I/O error
+     * @throws java.io.IOException on I/O error
      * @throws InterruptedException on interruption
      */
     public BufferedResponse returnContent() throws IOException, InterruptedException {
@@ -238,7 +320,7 @@ public class HttpRequest implements Closeable {
      *
      * @param file the file
      * @return this object
-     * @throws java.io.IOException  on I/O error
+     * @throws java.io.IOException on I/O error
      * @throws InterruptedException on interruption
      */
     public HttpRequest saveContent(File file) throws IOException, InterruptedException {
@@ -263,7 +345,7 @@ public class HttpRequest implements Closeable {
      *
      * @param out the output stream
      * @return this object
-     * @throws java.io.IOException  on I/O error
+     * @throws java.io.IOException on I/O error
      * @throws InterruptedException on interruption
      */
     public HttpRequest saveContent(OutputStream out) throws IOException, InterruptedException {
@@ -287,97 +369,40 @@ public class HttpRequest implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (conn != null) conn.disconnect();
-    }
-
-    /**
-     * Perform a GET request.
-     *
-     * @param url the URL
-     * @return a new request object
-     */
-    public static HttpRequest get(URL url) {
-        return request("GET", url);
-    }
-
-    /**
-     * Perform a POST request.
-     *
-     * @param url the URL
-     * @return a new request object
-     */
-    public static HttpRequest post(URL url) {
-        return request("POST", url);
-    }
-
-    /**
-     * Perform a request.
-     *
-     * @param method the method
-     * @param url    the URL
-     * @return a new request object
-     */
-    public static HttpRequest request(String method, URL url) {
-        return new HttpRequest(method, url);
-    }
-
-    /**
-     * Create a new {@link java.net.URL} and throw a {@link RuntimeException} if the URL
-     * is not valid.
-     *
-     * @param url the url
-     * @return a URL object
-     * @throws RuntimeException if the URL is invalid
-     */
-    public static URL url(String url) {
-        try {
-            return new URL(url);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * URL may contain spaces and other nasties that will cause a failure.
-     *
-     * @param existing the existing URL to transform
-     * @return the new URL, or old one if there was a failure
-     */
-    private static URL reformat(URL existing) {
-        try {
-            URL url = new URL(existing.toString());
-            URI uri = new URI(
-                    url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(),
-                    url.getPath(), url.getQuery(), url.getRef());
-            url = uri.toURL();
-            return url;
-        } catch (MalformedURLException e) {
-            return existing;
-        } catch (URISyntaxException e) {
-            return existing;
+        if (conn != null) {
+            conn.disconnect();
         }
     }
 
     /**
      * Used with {@link #bodyForm(Form)}.
      */
-    public final static class Form {
+    public static final class Form {
         public final List<String> elements = new ArrayList<>();
 
         private Form() {
         }
 
         /**
+         * Create a new form.
+         *
+         * @return a new form
+         */
+        public static Form form() {
+            return new Form();
+        }
+
+        /**
          * Add a key/value to the form.
          *
-         * @param key   the key
+         * @param key the key
          * @param value the value
          * @return this object
          */
         public Form add(String key, String value) {
             try {
-                elements.add(URLEncoder.encode(key, "UTF-8") +
-                        "=" + URLEncoder.encode(value, "UTF-8"));
+                elements.add(URLEncoder.encode(key, "UTF-8")
+                    + "=" + URLEncoder.encode(value, "UTF-8"));
                 return this;
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException(e);
@@ -398,21 +423,12 @@ public class HttpRequest implements Closeable {
             }
             return builder.toString();
         }
-
-        /**
-         * Create a new form.
-         *
-         * @return a new form
-         */
-        public static Form form() {
-            return new Form();
-        }
     }
 
     /**
      * Used to buffer the response in memory.
      */
-    public class BufferedResponse {
+    public static class BufferedResponse {
         private final byte[] data;
 
         private BufferedResponse(byte[] data) {
@@ -455,7 +471,7 @@ public class HttpRequest implements Closeable {
          *
          * @param file the file
          * @return this object
-         * @throws java.io.IOException  on I/O error
+         * @throws java.io.IOException on I/O error
          * @throws InterruptedException on interruption
          */
         public BufferedResponse saveContent(File file) throws IOException, InterruptedException {
@@ -482,26 +498,13 @@ public class HttpRequest implements Closeable {
          *
          * @param out the output stream
          * @return this object
-         * @throws java.io.IOException  on I/O error
+         * @throws java.io.IOException on I/O error
          * @throws InterruptedException on interruption
          */
         public BufferedResponse saveContent(OutputStream out) throws IOException, InterruptedException {
             out.write(data);
 
             return this;
-        }
-    }
-
-    private static void checkInterrupted() throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) {
-            throw new InterruptedException();
-        }
-    }
-
-    private static void closeQuietly(Closeable closeable) {
-        try {
-            closeable.close();
-        } catch (IOException ignored) {
         }
     }
 

@@ -16,10 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.sk89q.squirrelid.cache;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+package com.sk89q.squirrelid.cache;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
@@ -36,9 +34,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.annotation.Nonnull;
 import javax.sql.DataSource;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * An implementation of a UUID cache using a MySQL database. Please refer to {@link
@@ -79,13 +79,11 @@ public class MySQLCache extends AbstractProfileCache {
      * table name used for caching is {@link #TABLE_NAME}.
      *
      * @param dataSource data source to use for interacting with the mysql database
-     *
      * @return the newly constructed {@link MySQLCache}
-     *
      * @throws SQLException thrown if an error occurs whilst creating the tables
      */
     public static MySQLCache create(@Nonnull DataSource dataSource)
-            throws SQLException {
+        throws SQLException {
         checkNotNull(dataSource, "dataSource cannot be null.");
         return new MySQLCache(dataSource, TABLE_NAME);
     }
@@ -97,13 +95,11 @@ public class MySQLCache extends AbstractProfileCache {
      *
      * @param dataSource data source to use for interacting with the mysql database
      * @param tableName name of the table that will cache the name and uuids
-     *
      * @return the newly constructed {@link MySQLCache}
-     *
      * @throws SQLException thrown if an error occurs whilst creating the tables
      */
     public static MySQLCache create(@Nonnull DataSource dataSource, @Nonnull String tableName)
-            throws SQLException {
+        throws SQLException {
         checkNotNull(dataSource, "dataSource cannot be null.");
         return new MySQLCache(dataSource, tableName);
     }
@@ -113,13 +109,11 @@ public class MySQLCache extends AbstractProfileCache {
      * caching is {@link #TABLE_NAME}.
      *
      * @param connection connection to use for interacting with the mysql database
-     *
      * @return the newly constructed {@link MySQLCache}
-     *
      * @throws SQLException thrown if an error occurs whilst creating the tables
      */
     public static MySQLCache create(@Nonnull Connection connection)
-            throws SQLException {
+        throws SQLException {
         checkNotNull(connection, "connection cannot be null.");
         return new MySQLCache(connection, TABLE_NAME);
     }
@@ -129,13 +123,11 @@ public class MySQLCache extends AbstractProfileCache {
      *
      * @param connection connection to use for interacting with the mysql database
      * @param tableName name of the table that will cache the name and uuids
-     *
      * @return the newly constructed {@link MySQLCache}
-     *
      * @throws SQLException thrown if an error occurs whilst creating the tables
      */
     public static MySQLCache create(@Nonnull Connection connection, @Nonnull String tableName)
-            throws SQLException {
+        throws SQLException {
         checkNotNull(connection, "connection cannot be null.");
         return new MySQLCache(connection, tableName);
     }
@@ -161,7 +153,8 @@ public class MySQLCache extends AbstractProfileCache {
     }
 
     /**
-     * Create the necessary tables and indices if they do not exist yet. This method is called when a
+     * Create the necessary tables and indices if they do not exist yet. This method is called when
+     * a
      * new instance of {@link MySQLCache} is created.
      *
      * @throws SQLException thrown on error
@@ -170,9 +163,9 @@ public class MySQLCache extends AbstractProfileCache {
         Connection conn = getConnection();
         try (Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS `" + this.tableName + "` ("
-                            + "`uuid` CHAR(36) PRIMARY KEY NOT NULL, "
-                            + "`name` VARCHAR(16) NOT NULL UNIQUE KEY)");
+                "CREATE TABLE IF NOT EXISTS `" + this.tableName + "` ("
+                    + "`uuid` CHAR(36) PRIMARY KEY NOT NULL, "
+                    + "`name` VARCHAR(16) NOT NULL UNIQUE KEY)");
         } catch (SQLException e) {
             throw new SQLException("Failed to create table.", e);
         } finally {

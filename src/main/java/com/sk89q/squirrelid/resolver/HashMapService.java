@@ -21,12 +21,13 @@ package com.sk89q.squirrelid.resolver;
 
 import com.sk89q.squirrelid.Profile;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nullable;
 
 /**
  * A {@code ProfileService} backed by a {@code ConcurrentHashMap}.
@@ -49,7 +50,7 @@ public class HashMapService extends SingleRequestService {
      */
     public HashMapService(Map<String, UUID> map) {
         for (Map.Entry<String, UUID> entry : map.entrySet()) {
-            this.map.put(entry.getKey().toLowerCase(), entry.getValue());
+            this.map.put(entry.getKey().toLowerCase(Locale.US), entry.getValue());
         }
     }
 
@@ -59,7 +60,7 @@ public class HashMapService extends SingleRequestService {
      * @param profile the profile
      */
     public void put(Profile profile) {
-        this.map.put(profile.getName().toLowerCase(), profile.getUniqueId());
+        this.map.put(profile.getName().toLowerCase(Locale.US), profile.getUniqueId());
     }
 
     /**
@@ -81,7 +82,7 @@ public class HashMapService extends SingleRequestService {
     @Nullable
     @Override
     public Profile findByName(String name) throws IOException, InterruptedException {
-        UUID uuid = map.get(name.toLowerCase());
+        UUID uuid = map.get(name.toLowerCase(Locale.US));
         if (uuid != null) {
             return new Profile(uuid, name);
         } else {

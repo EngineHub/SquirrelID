@@ -22,8 +22,8 @@ package com.sk89q.squirrelid.cache;
 import com.google.common.collect.ImmutableMap;
 import com.sk89q.squirrelid.Profile;
 
-import javax.annotation.Nullable;
 import java.util.UUID;
+import javax.annotation.Nullable;
 
 /**
  * Stores a "last known" mapping of UUIDs to names.

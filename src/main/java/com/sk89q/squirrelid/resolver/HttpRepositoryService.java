@@ -19,9 +19,6 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
@@ -32,15 +29,16 @@ import com.sk89q.squirrelid.util.UUIDs;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.annotation.Nullable;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Resolves names in bulk to UUIDs using Mojang's profile HTTP API.
@@ -69,6 +67,37 @@ public class HttpRepositoryService implements ProfileService {
     public HttpRepositoryService(String agent) {
         checkNotNull(agent);
         profilesURL = HttpRequest.url("https://api.mojang.com/profiles/" + agent);
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    private static Profile decodeResult(Object entry) {
+        try {
+            if (entry instanceof Map) {
+                Map<Object, Object> mapEntry = (Map<Object, Object>) entry;
+                Object rawUuid = mapEntry.get("id");
+                Object rawName = mapEntry.get("name");
+
+                if (rawUuid != null && rawName != null) {
+                    UUID uuid = UUID.fromString(UUIDs.addDashes(String.valueOf(rawUuid)));
+                    String name = String.valueOf(rawName);
+                    return new Profile(uuid, name);
+                }
+            }
+        } catch (ClassCastException | IllegalArgumentException e) {
+            log.log(Level.WARNING, "Got invalid value from UUID lookup service", e);
+        }
+
+        return null;
+    }
+
+    /**
+     * Create a resolver for Minecraft.
+     *
+     * @return a UUID resolver
+     */
+    public static ProfileService forMinecraft() {
+        return new HttpRepositoryService(MINECRAFT_AGENT);
     }
 
     /**
@@ -118,7 +147,7 @@ public class HttpRepositoryService implements ProfileService {
     @Nullable
     @Override
     public Profile findByName(String name) throws IOException, InterruptedException {
-        ImmutableList<Profile> profiles = findAllByName(Arrays.asList(name));
+        ImmutableList<Profile> profiles = findAllByName(ImmutableList.of(name));
         if (!profiles.isEmpty()) {
             return profiles.get(0);
         } else {
@@ -153,7 +182,7 @@ public class HttpRepositoryService implements ProfileService {
      * @throws InterruptedException thrown on interruption
      */
     protected ImmutableList<Profile> query(Iterable<String> names) throws IOException, InterruptedException {
-        List<Profile> profiles = new ArrayList<Profile>();
+        List<Profile> profiles = new ArrayList<>();
 
         Object result;
 
@@ -163,11 +192,11 @@ public class HttpRepositoryService implements ProfileService {
         while (true) {
             try {
                 result = HttpRequest
-                        .post(profilesURL)
-                        .bodyJson(names)
-                        .execute()
-                        .returnContent()
-                        .asJson();
+                    .post(profilesURL)
+                    .bodyJson(names)
+                    .execute()
+                    .returnContent()
+                    .asJson();
                 break;
             } catch (IOException e) {
                 if (retriesLeft == 0) {
@@ -192,39 +221,6 @@ public class HttpRepositoryService implements ProfileService {
         }
 
         return ImmutableList.copyOf(profiles);
-    }
-
-    @Nullable
-    @SuppressWarnings("unchecked")
-    private static Profile decodeResult(Object entry) {
-        try {
-            if (entry instanceof Map) {
-                Map<Object, Object> mapEntry = (Map<Object, Object>) entry;
-                Object rawUuid = mapEntry.get("id");
-                Object rawName = mapEntry.get("name");
-
-                if (rawUuid != null && rawName != null) {
-                    UUID uuid = UUID.fromString(UUIDs.addDashes(String.valueOf(rawUuid)));
-                    String name = String.valueOf(rawName);
-                    return new Profile(uuid, name);
-                }
-            }
-        } catch (ClassCastException e) {
-            log.log(Level.WARNING, "Got invalid value from UUID lookup service", e);
-        } catch (IllegalArgumentException e) {
-            log.log(Level.WARNING, "Got invalid value from UUID lookup service", e);
-        }
-
-        return null;
-    }
-
-    /**
-     * Create a resolver for Minecraft.
-     *
-     * @return a UUID resolver
-     */
-    public static ProfileService forMinecraft() {
-        return new HttpRepositoryService(MINECRAFT_AGENT);
     }
 
 }
