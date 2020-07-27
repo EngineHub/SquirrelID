@@ -100,9 +100,9 @@ public class SQLiteCache extends AbstractProfileCache {
         Connection conn = getConnection();
         Statement stmt = conn.createStatement();
         stmt.executeUpdate(
-                "CREATE TABLE IF NOT EXISTS uuid_cache (\n" +
-                "  uuid CHAR(36) PRIMARY KEY NOT NULL,\n" +
-                "  name CHAR(32) NOT NULL)");
+            "CREATE TABLE IF NOT EXISTS uuid_cache (\n"
+                + "  uuid CHAR(36) PRIMARY KEY NOT NULL,\n"
+                + "  name CHAR(32) NOT NULL)");
 
         try {
             stmt.executeUpdate("CREATE INDEX name_index ON uuid_cache (name)");
@@ -147,7 +147,7 @@ public class SQLiteCache extends AbstractProfileCache {
         boolean first = true;
         for (UUID uuid : uuids) {
             checkNotNull(uuid, "Unexpected null UUID");
-            
+
             if (!first) {
                 builder.append(", ");
             }

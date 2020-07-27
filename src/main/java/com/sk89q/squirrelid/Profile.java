@@ -87,14 +87,16 @@ public final class Profile {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Profile profile = (Profile) o;
 
-        if (!uniqueId.equals(profile.uniqueId)) return false;
-
-        return true;
+        return uniqueId.equals(profile.uniqueId);
     }
 
     @Override
@@ -104,10 +106,10 @@ public final class Profile {
 
     @Override
     public String toString() {
-        return "Profile{" +
-                "uniqueId=" + uniqueId +
-                ", name='" + name + '\'' +
-                '}';
+        return "Profile{"
+            + "uniqueId=" + uniqueId
+            + ", name='" + name + '\''
+            + '}';
     }
 
 }

@@ -23,8 +23,8 @@ import com.sk89q.squirrelid.Profile;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
+import javax.annotation.Nullable;
 
 /**
  * Checks the list of online players in Bukkit to find UUIDs.
@@ -34,6 +34,10 @@ public class BukkitPlayerService extends SingleRequestService {
     private static final BukkitPlayerService INSTANCE = new BukkitPlayerService();
 
     private BukkitPlayerService() {
+    }
+
+    public static BukkitPlayerService getInstance() {
+        return INSTANCE;
     }
 
     @Override
@@ -50,10 +54,6 @@ public class BukkitPlayerService extends SingleRequestService {
         } else {
             return null;
         }
-    }
-
-    public static BukkitPlayerService getInstance() {
-        return INSTANCE;
     }
 
 }

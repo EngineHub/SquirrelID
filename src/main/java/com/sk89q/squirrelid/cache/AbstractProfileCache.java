@@ -23,7 +23,6 @@ import com.google.common.collect.ImmutableList;
 import com.sk89q.squirrelid.Profile;
 
 import java.util.UUID;
-
 import javax.annotation.Nullable;
 
 /**

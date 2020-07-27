@@ -46,6 +46,11 @@ dependencies {
     "implementation"("com.googlecode.json-simple:json-simple:1.1")
     "implementation"("org.xerial:sqlite-jdbc:3.7.2")
     "implementation"("com.destroystokyo.paper:paper-api:1.13.2-R0.1-SNAPSHOT")
+
+    "testImplementation"("org.junit.jupiter:junit-jupiter-api:${Versions.JUNIT}")
+    "testImplementation"("org.junit.jupiter:junit-jupiter-params:${Versions.JUNIT}")
+    "testImplementation"("org.hamcrest:hamcrest:2.2")
+    "testRuntime"("org.junit.jupiter:junit-jupiter-engine:${Versions.JUNIT}")
 }
 
 configure<LicenseExtension> {
