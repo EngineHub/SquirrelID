@@ -106,7 +106,7 @@ Note: We recommend shading or shadowing in SquirrelID for distribution, **reloca
     <dependency>
         <groupId>org.enginehub</groupId>
         <artifactId>squirrelid</artifactId>
-        <version>0.2.0</version>
+        <version>0.3.0</version>
         <scope>compile</scope>
         <type>jar</type>
     </dependency>
@@ -121,7 +121,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.enginehub:squirrelid:0.2.0'
+    compile 'org.enginehub:squirrelid:0.3.0'
 }
 ```
 

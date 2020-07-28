@@ -19,10 +19,10 @@
 
 package org.enginehub.squirrelid.resolver;
 
-import org.enginehub.squirrelid.Profile;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.enginehub.squirrelid.Profile;
 
 import java.io.IOException;
 import java.util.UUID;
