@@ -4,8 +4,9 @@
 SquirrelID is a Java library for working with Mojang profiles.
 
 * The resolution of UUIDs from player names in bulk.
+* The Resolution of player names from UUIDs in bulk.  
 * "Last seen" UUID -> name cache implementations.
-  * Available as SQLite-backed or in-memory.
+  * Available as SQLite-backed, MySQL-backed, or in-memory.
 * Thread-safe implementations.
 * Optional parallel fetching of UUIDs from player names.
 

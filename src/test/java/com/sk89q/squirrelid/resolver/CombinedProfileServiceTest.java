@@ -19,17 +19,17 @@
 
 package com.sk89q.squirrelid.resolver;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
-
 import com.google.common.collect.Lists;
 import com.sk89q.squirrelid.Profile;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.util.UUID;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 
 public class CombinedProfileServiceTest {
 
@@ -78,4 +78,37 @@ public class CombinedProfileServiceTest {
                         Matchers.<Profile>hasSize(1),
                         containsInAnyOrder(fakeNotchProfile)));
     }
+
+    @Test
+    public void testFindAllByUuid() throws Exception {
+        HashMapService staticResolver = new HashMapService();
+        ProfileService realResolver = HttpRepositoryService.forMinecraft();
+        ProfileService resolver = new CombinedProfileService(staticResolver, realResolver);
+
+        UUID notchUuid = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
+        Profile notchProfile = new Profile(notchUuid, "Notch");
+
+        assertThat(
+            resolver.findByUuid(notchUuid),
+            equalTo(notchProfile));
+
+        assertThat(
+            resolver.findAllByUuid(Lists.newArrayList(notchUuid)),
+            allOf(
+                Matchers.<Profile>hasSize(1),
+                containsInAnyOrder(notchProfile)));
+
+        staticResolver.put(notchProfile);
+
+        assertThat(
+            resolver.findByUuid(notchUuid),
+            equalTo(notchProfile));
+
+        assertThat(
+            resolver.findAllByUuid(Lists.newArrayList(notchUuid)),
+            allOf(
+                Matchers.<Profile>hasSize(1),
+                containsInAnyOrder(notchProfile)));
+    }
+
 }

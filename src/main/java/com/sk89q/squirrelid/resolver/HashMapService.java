@@ -34,7 +34,8 @@ import javax.annotation.Nullable;
  */
 public class HashMapService extends SingleRequestService {
 
-    private final ConcurrentHashMap<String, UUID> map = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, UUID> nameToIdMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, String> idToNameMap = new ConcurrentHashMap<>();
 
     /**
      * Create a new instance.
@@ -50,7 +51,8 @@ public class HashMapService extends SingleRequestService {
      */
     public HashMapService(Map<String, UUID> map) {
         for (Map.Entry<String, UUID> entry : map.entrySet()) {
-            this.map.put(entry.getKey().toLowerCase(Locale.US), entry.getValue());
+            this.nameToIdMap.put(entry.getKey().toLowerCase(Locale.US), entry.getValue());
+            this.idToNameMap.put(entry.getValue(), entry.getKey().toLowerCase(Locale.US));
         }
     }
 
@@ -60,7 +62,8 @@ public class HashMapService extends SingleRequestService {
      * @param profile the profile
      */
     public void put(Profile profile) {
-        this.map.put(profile.getName().toLowerCase(Locale.US), profile.getUniqueId());
+        this.nameToIdMap.put(profile.getName().toLowerCase(Locale.US), profile.getUniqueId());
+        this.idToNameMap.put(profile.getUniqueId(), profile.getName().toLowerCase(Locale.US));
     }
 
     /**
@@ -82,8 +85,19 @@ public class HashMapService extends SingleRequestService {
     @Nullable
     @Override
     public Profile findByName(String name) throws IOException, InterruptedException {
-        UUID uuid = map.get(name.toLowerCase(Locale.US));
+        UUID uuid = nameToIdMap.get(name.toLowerCase(Locale.US));
         if (uuid != null) {
+            return new Profile(uuid, name);
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
+    @Override
+    public Profile findByUuid(UUID uuid) throws IOException, InterruptedException {
+        String name = idToNameMap.get(uuid);
+        if (name != null) {
             return new Profile(uuid, name);
         } else {
             return null;

@@ -85,4 +85,48 @@ public class HashMapServiceTest {
 
     }
 
+    @Test
+    public void testFindAllByUuid() throws Exception {
+        HashMapService resolver = new HashMapService();
+
+        UUID notchUuid = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
+        UUID jebUuid = UUID.fromString("853c80ef-3c37-49fd-aa49-938b674adae6");
+        Profile notchProfile = new Profile(notchUuid, "Notch");
+        Profile jebProfile = new Profile(jebUuid, "jeb_");
+
+        assertThat(
+            resolver.findByUuid(notchUuid),
+            equalTo(null));
+
+        assertThat(
+            resolver.findAllByUuid(Lists.newArrayList(notchUuid)),
+            Matchers.hasSize(0));
+
+        resolver.put(notchProfile);
+
+        assertThat(
+            resolver.findByUuid(notchUuid),
+            equalTo(notchProfile));
+
+        assertThat(
+            resolver.findAllByUuid(Lists.newArrayList(notchUuid)),
+            allOf(
+                Matchers.<Profile>hasSize(1),
+                containsInAnyOrder(notchProfile)));
+
+        assertThat(
+            resolver.findAllByUuid(Arrays.asList(notchUuid, jebUuid)),
+            allOf(
+                Matchers.<Profile>hasSize(1),
+                containsInAnyOrder(notchProfile)));
+
+        resolver.put(jebProfile);
+
+        assertThat(
+            resolver.findAllByUuid(Arrays.asList(notchUuid, jebUuid)),
+            allOf(
+                Matchers.<Profile>hasSize(2),
+                containsInAnyOrder(notchProfile, jebProfile)));
+    }
+
 }

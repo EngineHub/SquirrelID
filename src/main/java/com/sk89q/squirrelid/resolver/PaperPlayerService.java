@@ -23,6 +23,7 @@ import com.sk89q.squirrelid.Profile;
 import org.bukkit.Bukkit;
 
 import java.io.IOException;
+import java.util.UUID;
 import javax.annotation.Nullable;
 
 /**
@@ -67,6 +68,17 @@ public class PaperPlayerService extends SingleRequestService {
     @Override
     public Profile findByName(String name) throws IOException, InterruptedException {
         com.destroystokyo.paper.profile.PlayerProfile profile = Bukkit.createProfile(name);
+        if (profile.completeFromCache()) {
+            return new Profile(profile.getId(), profile.getName());
+        }
+
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Profile findByUuid(UUID uuid) throws IOException, InterruptedException {
+        com.destroystokyo.paper.profile.PlayerProfile profile = Bukkit.createProfile(uuid);
         if (profile.completeFromCache()) {
             return new Profile(profile.getId(), profile.getName());
         }
