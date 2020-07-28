@@ -88,7 +88,7 @@ Profile cachedProfile = cache.getIfPresent(profile.getUniqueId());
 As a dependency
 ---------------
 
-Note: We recommend shading or shadowing in SquirrelID for distribution, **relocating** the `com.sk89q.squirrelid` package to an internal package without your project.
+Note: We recommend shading or shadowing in SquirrelID for distribution, **relocating** the `org.enginehub.squirrelid` package to an internal package without your project.
 
 #### Maven
 
@@ -104,7 +104,7 @@ Note: We recommend shading or shadowing in SquirrelID for distribution, **reloca
 ```xml
 <dependencies>
     <dependency>
-        <groupId>com.sk89q</groupId>
+        <groupId>org.enginehub</groupId>
         <artifactId>squirrelid</artifactId>
         <version>0.2.0</version>
         <scope>compile</scope>
@@ -121,7 +121,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.sk89q:squirrelid:0.2.0'
+    compile 'org.enginehub:squirrelid:0.2.0'
 }
 ```
 
