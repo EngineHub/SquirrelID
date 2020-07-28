@@ -32,4 +32,10 @@ public class UUIDsTest {
         assertThat(UUIDs.addDashes("a8fb55e584384bbc8d08633cce6078f8"), equalTo("a8fb55e5-8438-4bbc-8d08-633cce6078f8"));
     }
 
+    @Test
+    public void testStripDashes() throws Exception {
+        assertThat(UUIDs.stripDashes("a8fb55e5-8438-4bbc-8d08-633cce6078f8"), equalTo("a8fb55e584384bbc8d08633cce6078f8"));
+        assertThat(UUIDs.stripDashes("a8fb55e584384bbc8d08633cce6078f8"), equalTo("a8fb55e584384bbc8d08633cce6078f8"));
+    }
+
 }

@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -123,6 +124,66 @@ public class CombinedProfileService implements ProfileService {
 
         for (ProfileService service : services) {
             service.findAllByName(new ArrayList<>(missing), forwardingConsumer);
+
+            if (missing.isEmpty()) {
+                break;
+            }
+        }
+    }
+
+    @Nullable
+    @Override
+    public Profile findByUuid(UUID uuid) throws IOException, InterruptedException {
+        for (ProfileService service : services) {
+            Profile profile = service.findByUuid(uuid);
+            if (profile != null) {
+                return profile;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ImmutableList<Profile> findAllByUuid(Iterable<UUID> uuids) throws IOException, InterruptedException {
+        List<UUID> missing = new ArrayList<>();
+        List<Profile> totalResults = new ArrayList<>();
+
+        for (UUID uuid : uuids) {
+            missing.add(uuid);
+        }
+
+        for (ProfileService service : services) {
+            ImmutableList<Profile> results = service.findAllByUuid(missing);
+
+            for (Profile profile : results) {
+                UUID foundUuid = profile.getUniqueId();
+                missing.remove(foundUuid);
+                totalResults.add(profile);
+            }
+
+            if (missing.isEmpty()) {
+                break;
+            }
+        }
+
+        return ImmutableList.copyOf(totalResults);
+    }
+
+    @Override
+    public void findAllByUuid(Iterable<UUID> uuids, Predicate<Profile> consumer) throws IOException, InterruptedException {
+        final List<UUID> missing = Collections.synchronizedList(new ArrayList<>());
+
+        Predicate<Profile> forwardingConsumer = profile -> {
+            missing.remove(profile.getUniqueId());
+            return consumer.test(profile);
+        };
+
+        for (UUID uuid : uuids) {
+            missing.add(uuid);
+        }
+
+        for (ProfileService service : services) {
+            service.findAllByUuid(new ArrayList<>(missing), forwardingConsumer);
 
             if (missing.isEmpty()) {
                 break;

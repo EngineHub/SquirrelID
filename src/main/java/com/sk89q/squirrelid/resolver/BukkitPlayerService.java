@@ -19,11 +19,14 @@
 
 package com.sk89q.squirrelid.resolver;
 
+import com.google.common.collect.ImmutableList;
 import com.sk89q.squirrelid.Profile;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
+import java.util.UUID;
 import javax.annotation.Nullable;
 
 /**
@@ -50,6 +53,17 @@ public class BukkitPlayerService extends SingleRequestService {
     public Profile findByName(String name) throws IOException, InterruptedException {
         Player player = Bukkit.getServer().getPlayerExact(name);
         if (player != null) {
+            return new Profile(player.getUniqueId(), player.getName());
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
+    @Override
+    public Profile findByUuid(UUID uuid) throws IOException, InterruptedException {
+        OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+        if (player.getName() != null) {
             return new Profile(player.getUniqueId(), player.getName());
         } else {
             return null;

@@ -39,7 +39,7 @@ public final class UUIDs {
      *
      * @param uuid the UUID
      * @return a UUID with dashes
-     * @throws IllegalArgumentException thrown if the given input is not actually an UUID
+     * @throws IllegalArgumentException thrown if the given input is not actually a UUID
      */
     public static String addDashes(String uuid) {
         uuid = uuid.replace("-", ""); // Remove dashes
@@ -50,4 +50,23 @@ public final class UUIDs {
         return matcher.replaceAll("$1-$2-$3-$4-$5");
     }
 
+    /**
+     * Strip dashes from a UUID.
+     *
+     * <p>
+     *     If dashes have already been stripped, the same UUID will be returned.
+     * </p>
+     *
+     * @param uuid the UUID
+     * @return a UUID without dashes
+     * @throws IllegalArgumentException thrown if the given input is not actually a UUID
+     */
+    public static String stripDashes(String uuid) {
+        uuid = uuid.replace("-", ""); // Remove dashes
+        Matcher matcher = DASHLESS_PATTERN.matcher(uuid);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Invalid UUID format");
+        }
+        return uuid;
+    }
 }

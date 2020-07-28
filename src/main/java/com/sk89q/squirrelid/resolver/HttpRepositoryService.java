@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +52,7 @@ public class HttpRepositoryService implements ProfileService {
     private static final int MAX_NAMES_PER_REQUEST = 100;
 
     private final URL profilesURL;
+    private final Function<UUID, URL> nameHistoryUrlCreator;
     private int maxRetries = 5;
     private long retryDelay = 50;
 
@@ -67,11 +69,13 @@ public class HttpRepositoryService implements ProfileService {
     public HttpRepositoryService(String agent) {
         checkNotNull(agent);
         profilesURL = HttpRequest.url("https://api.mojang.com/profiles/" + agent);
+        nameHistoryUrlCreator = (uuid)
+            -> HttpRequest.url("https://api.mojang.com/user/profiles/" + UUIDs.stripDashes(uuid.toString()) + "/names");
     }
 
     @Nullable
     @SuppressWarnings("unchecked")
-    private static Profile decodeResult(Object entry) {
+    private static Profile decodeProfileResult(Object entry) {
         try {
             if (entry instanceof Map) {
                 Map<Object, Object> mapEntry = (Map<Object, Object>) entry;
@@ -86,6 +90,26 @@ public class HttpRepositoryService implements ProfileService {
             }
         } catch (ClassCastException | IllegalArgumentException e) {
             log.log(Level.WARNING, "Got invalid value from UUID lookup service", e);
+        }
+
+        return null;
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    private static Profile decodeNameHistoryResult(Object entry, UUID uuid) {
+        try {
+            if (entry instanceof Map) {
+                Map<Object, Object> mapEntry = (Map<Object, Object>) entry;
+                Object rawName = mapEntry.get("name");
+
+                if (rawName != null) {
+                    String name = String.valueOf(rawName);
+                    return new Profile(uuid, name);
+                }
+            }
+        } catch (ClassCastException | IllegalArgumentException e) {
+            log.log(Level.WARNING, "Got invalid value from Name History lookup service", e);
         }
 
         return null;
@@ -156,32 +180,55 @@ public class HttpRepositoryService implements ProfileService {
     }
 
     @Override
+    public ImmutableList<Profile> findAllByName(Iterable<String> names) throws IOException, InterruptedException {
+        Builder<Profile> builder = ImmutableList.builder();
+        for (List<String> partition : Iterables.partition(names, MAX_NAMES_PER_REQUEST)) {
+            builder.addAll(queryByName(partition));
+        }
+        return builder.build();
+    }
+
+    @Override
     public void findAllByName(Iterable<String> names, Predicate<Profile> consumer) throws IOException, InterruptedException {
         for (List<String> partition : Iterables.partition(names, MAX_NAMES_PER_REQUEST)) {
-            for (Profile profile : query(partition)) {
+            for (Profile profile : queryByName(partition)) {
                 consumer.test(profile);
             }
         }
     }
 
+    @Nullable
     @Override
-    public ImmutableList<Profile> findAllByName(Iterable<String> names) throws IOException, InterruptedException {
-        Builder<Profile> builder = ImmutableList.builder();
-        for (List<String> partition : Iterables.partition(names, MAX_NAMES_PER_REQUEST)) {
-            builder.addAll(query(partition));
+    public Profile findByUuid(UUID uuid) throws IOException, InterruptedException {
+        ImmutableList<Profile> profiles = findAllByUuid(ImmutableList.of(uuid));
+        if (!profiles.isEmpty()) {
+            return profiles.get(0);
+        } else {
+            return null;
         }
-        return builder.build();
+    }
+
+    @Override
+    public ImmutableList<Profile> findAllByUuid(Iterable<UUID> uuids) throws IOException, InterruptedException {
+        return ImmutableList.copyOf(queryByUuid(uuids));
+    }
+
+    @Override
+    public void findAllByUuid(Iterable<UUID> uuids, Predicate<Profile> consumer) throws IOException, InterruptedException {
+        for (Profile profile : queryByUuid(uuids)) {
+            consumer.test(profile);
+        }
     }
 
     /**
-     * Perform a query for profiles without partitioning the queries.
+     * Perform a query for profiles by name without partitioning the queries.
      *
      * @param names an iterable of names
      * @return a list of results
      * @throws IOException thrown on I/O error
      * @throws InterruptedException thrown on interruption
      */
-    protected ImmutableList<Profile> query(Iterable<String> names) throws IOException, InterruptedException {
+    protected ImmutableList<Profile> queryByName(Iterable<String> names) throws IOException, InterruptedException {
         List<Profile> profiles = new ArrayList<>();
 
         Object result;
@@ -213,10 +260,66 @@ public class HttpRepositoryService implements ProfileService {
 
         if (result instanceof Iterable) {
             for (Object entry : (Iterable) result) {
-                Profile profile = decodeResult(entry);
+                Profile profile = decodeProfileResult(entry);
                 if (profile != null) {
                     profiles.add(profile);
                 }
+            }
+        }
+
+        return ImmutableList.copyOf(profiles);
+    }
+
+    /**
+     * Perform a query for profiles by uuid.
+     *
+     * @param uuids an iterable of uuids
+     * @return a list of results
+     * @throws IOException thrown on I/O error
+     * @throws InterruptedException thrown on interruption
+     */
+    protected ImmutableList<Profile> queryByUuid(Iterable<UUID> uuids) throws IOException, InterruptedException {
+        List<Profile> profiles = new ArrayList<>();
+
+        Object result;
+
+        int retriesLeft = maxRetries;
+        long retryDelay = this.retryDelay;
+
+        for (UUID uuid : uuids) {
+            while (true) {
+                try {
+                    result = HttpRequest
+                        .get(nameHistoryUrlCreator.apply(uuid))
+                        .execute()
+                        .returnContent()
+                        .asJson();
+
+                    if (result instanceof Iterable) {
+                        Profile lastProfile = null;
+                        for (Object entry : (Iterable) result) {
+                            Profile profile = decodeNameHistoryResult(entry, uuid);
+                            if (profile != null) {
+                                lastProfile = profile;
+                            }
+                        }
+                        if (lastProfile != null) {
+                            profiles.add(lastProfile);
+                        }
+                    }
+
+                    break;
+                } catch (IOException e) {
+                    if (retriesLeft == 0) {
+                        throw e;
+                    }
+
+                    log.log(Level.WARNING, "Failed to query name history service -- retrying...", e);
+                    Thread.sleep(retryDelay);
+                }
+
+                retryDelay *= 2;
+                retriesLeft--;
             }
         }
 

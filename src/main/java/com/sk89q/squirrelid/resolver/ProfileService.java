@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 import com.sk89q.squirrelid.Profile;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -44,7 +45,7 @@ public interface ProfileService {
     int getIdealRequestLimit();
 
     /**
-     * Query the profile server for the UUID of a name.
+     * Query the profile server by name.
      *
      * @param name a name
      * @return the profile of the user, otherwise {@code null}
@@ -55,7 +56,7 @@ public interface ProfileService {
     Profile findByName(String name) throws IOException, InterruptedException;
 
     /**
-     * Query the profile server for UUIDs for the given names.
+     * Query the profile server by the given names.
      *
      * @param names an iterable containing names to search
      * @return a list of found profiles
@@ -65,7 +66,7 @@ public interface ProfileService {
     ImmutableList<Profile> findAllByName(Iterable<String> names) throws IOException, InterruptedException;
 
     /**
-     * Query the profile server for UUIDs for the given names.
+     * Query the profile server by the given names.
      *
      * @param names an iterable containing names to search
      * @param consumer a consumer function that will receive discovered profiles
@@ -73,5 +74,36 @@ public interface ProfileService {
      * @throws InterruptedException thrown on interruption
      */
     void findAllByName(Iterable<String> names, Predicate<Profile> consumer) throws IOException, InterruptedException;
+
+    /**
+     * Query the profile server by UUID.
+     *
+     * @param uuid a UUID
+     * @return the profile of the user, otherwise {@code null}
+     * @throws IOException thrown on I/O error
+     * @throws InterruptedException thrown on interruption
+     */
+    @Nullable
+    Profile findByUuid(UUID uuid) throws IOException, InterruptedException;
+
+    /**
+     * Query the profile server by the given UUIDs.
+     *
+     * @param uuids an iterable containing UUIDs to search
+     * @return a list of found profiles
+     * @throws IOException thrown on I/O error
+     * @throws InterruptedException thrown on interruption
+     */
+    ImmutableList<Profile> findAllByUuid(Iterable<UUID> uuids) throws IOException, InterruptedException;
+
+    /**
+     * Query the profile server by the given UUIDs.
+     *
+     * @param uuids an iterable containing UUIDs to search
+     * @param consumer a consumer function that will receive discovered profiles
+     * @throws IOException thrown on I/O error
+     * @throws InterruptedException thrown on interruption
+     */
+    void findAllByUuid(Iterable<UUID> uuids, Predicate<Profile> consumer) throws IOException, InterruptedException;
 
 }

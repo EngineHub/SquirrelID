@@ -68,4 +68,35 @@ public class HttpRepositoryServiceTest {
                         containsInAnyOrder(jebProfile)));
     }
 
+    @Test
+    public void testFindAllByUuid() throws Exception {
+        ProfileService resolver = HttpRepositoryService.forMinecraft();
+
+        UUID notchUuid = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
+        UUID jebUuid = UUID.fromString("853c80ef-3c37-49fd-aa49-938b674adae6");
+        UUID me4502Uuid = UUID.fromString("1381ed2f-de72-411b-a830-316deec050e7");
+        Profile notchProfile = new Profile(notchUuid, "Notch");
+        Profile jebProfile = new Profile(jebUuid, "jeb_");
+        Profile me4502Profile = new Profile(me4502Uuid, "Me4502"); // I've updated my name
+
+        assertThat(
+            resolver.findByUuid(notchUuid),
+            equalTo(notchProfile));
+
+        assertThat(
+            resolver.findAllByUuid(Lists.newArrayList(notchUuid)),
+            allOf(
+                Matchers.<Profile>hasSize(1),
+                containsInAnyOrder(notchProfile)));
+
+        assertThat(
+            resolver.findAllByUuid(Arrays.asList(notchUuid, jebUuid)),
+            allOf(
+                Matchers.<Profile>hasSize(2),
+                containsInAnyOrder(notchProfile, jebProfile)));
+
+        assertThat(
+            resolver.findByUuid(me4502Uuid),
+            equalTo(me4502Profile));
+    }
 }

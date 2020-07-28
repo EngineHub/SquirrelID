@@ -24,6 +24,7 @@ import com.sk89q.squirrelid.Profile;
 import com.sk89q.squirrelid.cache.ProfileCache;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
@@ -78,6 +79,33 @@ public class CacheForwardingService implements ProfileService {
     @Override
     public void findAllByName(Iterable<String> names, final Predicate<Profile> consumer) throws IOException, InterruptedException {
         resolver.findAllByName(names, input -> {
+            cache.put(input);
+            return consumer.test(input);
+        });
+    }
+
+    @Nullable
+    @Override
+    public Profile findByUuid(UUID uuid) throws IOException, InterruptedException {
+        Profile profile = resolver.findByUuid(uuid);
+        if (profile != null) {
+            cache.put(profile);
+        }
+        return profile;
+    }
+
+    @Override
+    public ImmutableList<Profile> findAllByUuid(Iterable<UUID> uuids) throws IOException, InterruptedException {
+        ImmutableList<Profile> profiles = resolver.findAllByUuid(uuids);
+        for (Profile profile : profiles) {
+            cache.put(profile);
+        }
+        return profiles;
+    }
+
+    @Override
+    public void findAllByUuid(Iterable<UUID> uuids, Predicate<Profile> consumer) throws IOException, InterruptedException {
+        resolver.findAllByUuid(uuids, input -> {
             cache.put(input);
             return consumer.test(input);
         });
