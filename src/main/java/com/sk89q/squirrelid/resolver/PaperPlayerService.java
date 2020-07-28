@@ -25,18 +25,35 @@ import org.bukkit.Bukkit;
 import java.io.IOException;
 import javax.annotation.Nullable;
 
+/**
+ * Uses the shared paper profile cache to lookup profiles.
+ */
 public class PaperPlayerService extends SingleRequestService {
 
-    private static final PaperPlayerService INSTANCE = new PaperPlayerService();
+    private static PaperPlayerService INSTANCE;
 
-    private PaperPlayerService() {
+    static {
         try {
             Class.forName("com.destroystokyo.paper.profile.PlayerProfile");
+            INSTANCE = new PaperPlayerService();
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("PaperPlayerService called on a non-Paper server.");
+            INSTANCE = null;
         }
     }
 
+    private PaperPlayerService() {
+    }
+
+    /**
+     * Gets the instance of this service.
+     *
+     * <p>
+     *     This instance will be null if Paper is not
+     *     detected
+     * </p>
+     *
+     * @return the instance
+     */
     public static PaperPlayerService getInstance() {
         return INSTANCE;
     }
