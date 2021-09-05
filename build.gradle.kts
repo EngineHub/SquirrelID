@@ -1,10 +1,10 @@
 import org.ajoberstar.grgit.Grgit
-import net.minecrell.gradle.licenser.LicenseExtension
+import org.cadixdev.gradle.licenser.LicenseExtension
 
 plugins {
     id("java-library")
-    id("net.minecrell.licenser")
-    id("maven")
+    id("org.cadixdev.licenser") version "0.6.1"
+    id("maven-publish")
     id("eclipse")
     id("idea")
     id("com.jfrog.artifactory")
@@ -50,11 +50,16 @@ dependencies {
     "testImplementation"("org.junit.jupiter:junit-jupiter-api:${Versions.JUNIT}")
     "testImplementation"("org.junit.jupiter:junit-jupiter-params:${Versions.JUNIT}")
     "testImplementation"("org.hamcrest:hamcrest:2.2")
-    "testRuntime"("org.junit.jupiter:junit-jupiter-engine:${Versions.JUNIT}")
+    "testRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:${Versions.JUNIT}")
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
 }
 
 configure<LicenseExtension> {
-    header = rootProject.file("HEADER.txt")
+    header.set(resources.text.fromFile(file("HEADER.txt")))
     include("**/*.java")
 }
 
