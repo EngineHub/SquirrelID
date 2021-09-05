@@ -11,7 +11,6 @@ plugins {
     id("checkstyle")
 }
 
-
 logger.lifecycle("""
 *******************************************
  You are building SquirrelID!
