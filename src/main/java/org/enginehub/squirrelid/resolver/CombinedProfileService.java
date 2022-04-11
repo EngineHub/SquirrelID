@@ -89,14 +89,14 @@ public class CombinedProfileService implements ProfileService {
         List<Profile> totalResults = new ArrayList<>();
 
         for (String name : names) {
-            missing.add(name.toLowerCase(Locale.US));
+            missing.add(name);
         }
 
         for (ProfileService service : services) {
             ImmutableList<Profile> results = service.findAllByName(missing);
 
             for (Profile profile : results) {
-                String nameLower = profile.getName().toLowerCase(Locale.US);
+                String nameLower = profile.getName();
                 missing.remove(nameLower);
                 totalResults.add(profile);
             }
@@ -114,12 +114,12 @@ public class CombinedProfileService implements ProfileService {
         final List<String> missing = Collections.synchronizedList(new ArrayList<>());
 
         Predicate<Profile> forwardingConsumer = profile -> {
-            missing.remove(profile.getName().toLowerCase(Locale.US));
+            missing.remove(profile.getName());
             return consumer.test(profile);
         };
 
         for (String name : names) {
-            missing.add(name.toLowerCase(Locale.US));
+            missing.add(name);
         }
 
         for (ProfileService service : services) {

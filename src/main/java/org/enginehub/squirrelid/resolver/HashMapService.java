@@ -51,8 +51,8 @@ public class HashMapService extends SingleRequestService {
      */
     public HashMapService(Map<String, UUID> map) {
         for (Map.Entry<String, UUID> entry : map.entrySet()) {
-            this.nameToIdMap.put(entry.getKey().toLowerCase(Locale.US), entry.getValue());
-            this.idToNameMap.put(entry.getValue(), entry.getKey().toLowerCase(Locale.US));
+            this.nameToIdMap.put(entry.getKey(), entry.getValue());
+            this.idToNameMap.put(entry.getValue(), entry.getKey());
         }
     }
 
@@ -62,8 +62,8 @@ public class HashMapService extends SingleRequestService {
      * @param profile the profile
      */
     public void put(Profile profile) {
-        this.nameToIdMap.put(profile.getName().toLowerCase(Locale.US), profile.getUniqueId());
-        this.idToNameMap.put(profile.getUniqueId(), profile.getName().toLowerCase(Locale.US));
+        this.nameToIdMap.put(profile.getName(), profile.getUniqueId());
+        this.idToNameMap.put(profile.getUniqueId(), profile.getName());
     }
 
     /**
@@ -85,7 +85,7 @@ public class HashMapService extends SingleRequestService {
     @Nullable
     @Override
     public Profile findByName(String name) throws IOException, InterruptedException {
-        UUID uuid = nameToIdMap.get(name.toLowerCase(Locale.US));
+        UUID uuid = nameToIdMap.get(name);
         if (uuid != null) {
             return new Profile(uuid, name);
         } else {
