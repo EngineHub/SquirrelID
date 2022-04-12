@@ -96,8 +96,7 @@ public class CombinedProfileService implements ProfileService {
             ImmutableList<Profile> results = service.findAllByName(missing);
 
             for (Profile profile : results) {
-                String nameLower = profile.getName();
-                missing.remove(nameLower);
+                missing.remove(profile.getName());
                 totalResults.add(profile);
             }
 
