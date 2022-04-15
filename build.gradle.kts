@@ -3,7 +3,7 @@ import org.cadixdev.gradle.licenser.LicenseExtension
 
 plugins {
     id("java-library")
-    id("org.cadixdev.licenser") version "0.6.1"
+    id("org.cadixdev.licenser")
     id("maven-publish")
     id("eclipse")
     id("idea")
@@ -25,8 +25,6 @@ logger.lifecycle("""
  Output files will be in build/libs
 *******************************************
 """)
-
-applyArtifactoryConfig()
 
 repositories {
     mavenCentral()
@@ -54,9 +52,40 @@ dependencies {
 }
 
 java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(8))
     withSourcesJar()
     withJavadocJar()
 }
+
+// Java 8 turns on doclint which we fail
+tasks.withType<Javadoc>().configureEach {
+    (options as StandardJavadocDocletOptions).apply {
+        addStringOption("Xdoclint:none", "-quiet")
+        tags(
+            "apiNote:a:API Note:",
+            "implSpec:a:Implementation Requirements:",
+            "implNote:a:Implementation Note:"
+        )
+    }
+}
+
+configure<PublishingExtension> {
+    publications {
+        register<MavenPublication>("maven") {
+            from(components["java"])
+            versionMapping {
+                usage("java-api") {
+                    fromResolutionOf("runtimeClasspath")
+                }
+                usage("java-runtime") {
+                    fromResolutionResult()
+                }
+            }
+        }
+    }
+}
+
+applyArtifactoryConfig()
 
 configure<LicenseExtension> {
     header.set(resources.text.fromFile(file("HEADER.txt")))
