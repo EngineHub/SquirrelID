@@ -30,6 +30,5 @@ fun Project.applyArtifactoryConfig() {
     }
     tasks.named<ArtifactoryTask>("artifactoryPublish") {
         publications("maven")
-        setPublishArtifacts(true)
     }
 }

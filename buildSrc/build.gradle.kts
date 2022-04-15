@@ -33,7 +33,7 @@ val properties = Properties().also { props ->
 
 dependencies {
     implementation(gradleApi())
-    implementation("gradle.plugin.net.minecrell:licenser:0.4.1")
-    implementation("org.ajoberstar.grgit:grgit-gradle:4.0.2")
-    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.16.0")
+    implementation("gradle.plugin.org.cadixdev.gradle:licenser:0.6.1")
+    implementation("org.ajoberstar.grgit:grgit-gradle:4.1.0")
+    implementation("org.jfrog.buildinfo:build-info-extractor-gradle:4.21.0")
 }
