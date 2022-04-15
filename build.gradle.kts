@@ -54,6 +54,7 @@ dependencies {
 }
 
 java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(8))
     withSourcesJar()
     withJavadocJar()
 }
@@ -71,5 +72,13 @@ if (!project.hasProperty("gitCommitHash")) {
         logger.warn("Error getting commit hash", e)
 
         "no.git.id"
+    }
+}
+
+configure<PublishingExtension> {
+    publications {
+        register<MavenPublication>("maven") {
+            from(components["java"])
+        }
     }
 }
