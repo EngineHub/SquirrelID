@@ -70,7 +70,7 @@ public class HttpRepositoryService implements ProfileService {
         checkNotNull(agent);
         profilesURL = HttpRequest.url("https://api.mojang.com/profiles/" + agent);
         nameHistoryUrlCreator = (uuid)
-            -> HttpRequest.url("https://api.mojang.com/user/profiles/" + UUIDs.stripDashes(uuid.toString()) + "/names");
+            -> HttpRequest.url("https://sessionserver.mojang.com/session/minecraft/profile/" + UUIDs.stripDashes(uuid.toString()));
     }
 
     @Nullable
@@ -90,26 +90,6 @@ public class HttpRepositoryService implements ProfileService {
             }
         } catch (ClassCastException | IllegalArgumentException e) {
             log.log(Level.WARNING, "Got invalid value from UUID lookup service", e);
-        }
-
-        return null;
-    }
-
-    @Nullable
-    @SuppressWarnings("unchecked")
-    private static Profile decodeNameHistoryResult(Object entry, UUID uuid) {
-        try {
-            if (entry instanceof Map) {
-                Map<Object, Object> mapEntry = (Map<Object, Object>) entry;
-                Object rawName = mapEntry.get("name");
-
-                if (rawName != null) {
-                    String name = String.valueOf(rawName);
-                    return new Profile(uuid, name);
-                }
-            }
-        } catch (ClassCastException | IllegalArgumentException e) {
-            log.log(Level.WARNING, "Got invalid value from Name History lookup service", e);
         }
 
         return null;
@@ -295,16 +275,10 @@ public class HttpRepositoryService implements ProfileService {
                         .returnContent()
                         .asJson();
 
-                    if (result instanceof Iterable) {
-                        Profile lastProfile = null;
-                        for (Object entry : (Iterable) result) {
-                            Profile profile = decodeNameHistoryResult(entry, uuid);
-                            if (profile != null) {
-                                lastProfile = profile;
-                            }
-                        }
-                        if (lastProfile != null) {
-                            profiles.add(lastProfile);
+                    if (result instanceof Map map) {
+                        Object rawName = map.get("name");
+                        if (rawName != null) {
+                            profiles.add(new Profile(uuid, String.valueOf(rawName)));
                         }
                     }
 
