@@ -46,7 +46,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class HttpRepositoryService implements ProfileService {
 
-    public static final String MINECRAFT_AGENT = "Minecraft";
+    public static final String MINECRAFT_AGENT = "minecraft";
 
     private static final Logger log = Logger.getLogger(HttpRepositoryService.class.getCanonicalName());
     private static final int MAX_NAMES_PER_REQUEST = 100;
