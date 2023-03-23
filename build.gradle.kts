@@ -39,10 +39,10 @@ configurations.all {
 }
 
 dependencies {
-    "compileOnly"("com.google.guava:guava:${Versions.GUAVA}")
-    "compileOnly"("com.google.code.findbugs:jsr305:1.3.9")
-    "compileOnly"("org.xerial:sqlite-jdbc:3.36.0.3")
-    "compileOnly"("io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT")
+    "implementation"("com.google.guava:guava:${Versions.GUAVA}")
+    "implementation"("com.google.code.findbugs:jsr305:1.3.9")
+    "implementation"("org.xerial:sqlite-jdbc:3.36.0.3")
+    "implementation"("io.papermc.paper:paper-api:1.19.3-R0.1-SNAPSHOT")
 
     "testImplementation"("com.google.guava:guava:${Versions.GUAVA}")
     "testImplementation"("com.google.code.findbugs:jsr305:1.3.9")
